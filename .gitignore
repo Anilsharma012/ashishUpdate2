@@ -64,7 +64,7 @@ Thumbs.db
 # =====================
 # Secrets (do not track)
 # =====================
-.env
+# .env
 .env.development
 .env.production
 .env.local
