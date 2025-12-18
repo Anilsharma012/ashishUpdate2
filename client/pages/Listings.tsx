@@ -201,7 +201,9 @@ export default function Listings() {
 
       const data = await response.json();
 
-      if (data.success && Array.isArray(data.data)) {
+      if (data.success && data.data && Array.isArray(data.data.properties)) {
+        setProperties(data.data.properties);
+      } else if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
       } else if (Array.isArray(data)) {
         setProperties(data);
