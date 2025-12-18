@@ -14,114 +14,119 @@ import {
 /* =========================================================================
    Multer (image uploads)
    ========================================================================= */
+const uploadDir = path.join(process.cwd(), "uploads", "properties");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadPath = path.join(process.cwd(), "uploads", "properties");
-    if (!fs.existsSync(uploadPath))
-      fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
-  },
+  destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(
-      null,
-      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`,
-    );
+    const ext = path.extname(file.originalname);
+    cb(null, `${uniqueSuffix}${ext}`);
   },
 });
 
+const fileFilter = (
+  _req: any,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error("Only JPG/PNG/WEBP images are allowed"));
+};
+
 export const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (_req: any, file, cb: FileFilterCallback) => {
-    if (file.mimetype?.startsWith?.("image/")) cb(null, true);
-    else cb(new Error("Only image files are allowed"));
-  },
+  fileFilter,
+  limits: { fileSize: 8 * 1024 * 1024 },
 });
 
 /* =========================================================================
    Helpers
    ========================================================================= */
-const toInt = (v: any): number | undefined => {
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.trunc(n) : undefined;
-};
-
 function normSlug(v: any): string {
   return String(v || "")
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 }
 
-const escapeRegex = (s: string) =>
-  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function toInt(v: any): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  const n = Number(v);
+  if (Number.isNaN(n)) return undefined;
+  return Math.floor(n);
+}
 
-const pickFirst = (obj: any, keys: string[]) => {
+function pickFirst(obj: any, keys: string[]): any {
   for (const k of keys) {
     const v = obj?.[k];
+    if (Array.isArray(v)) {
+      const f = v.find((x) => x !== undefined && x !== null && String(x).trim() !== "");
+      if (f !== undefined) return f;
+    }
     if (v !== undefined && v !== null && String(v).trim() !== "") return v;
   }
   return undefined;
-};
+}
 
-// Map UI aliases → canonical DB values
+/* =========================================================================
+   Slug aliases
+   ========================================================================= */
 const TYPE_ALIASES: Record<string, string> = {
-  // PG / Co-living
-  "co-living": "pg",
-  coliving: "pg",
-  pg: "pg",
-
-  // Agricultural
-  "agricultural-land": "agricultural",
-  agri: "agricultural",
-  agricultural: "agricultural",
-
-  // Commercial family
-  commercial: "commercial",
+  // Commercial
+  shop: "commercial",
   showroom: "commercial",
   office: "commercial",
-  shop: "commercial",
   warehouse: "commercial",
+  industrial: "commercial",
 
-  // Residential family
-  residential: "residential",
-  flat: "flat",
+  // Residential
+  house: "residential",
+  villa: "residential",
   apartment: "flat",
+  flat: "flat",
 
-  // Plot
+  // Plot / Land
   plot: "plot",
-};
+  land: "plot",
 
-const PROPERTY_TYPE_CATEGORY_SLUGS = new Set([
-  "pg",
-  "commercial",
-  "agricultural",
-  "residential",
-  "flat",
-  "plot",
-]);
+  // Agricultural
+  agricultural: "agricultural",
+  farm: "agricultural",
+
+  // PG / Co-living
+  pg: "pg",
+  "co-living": "pg",
+  coliving: "pg",
+};
 
 const TOP_TABS = new Set(["buy", "rent", "sale", "lease", "pg"]);
 
-const PRICE_TYPE_ALIASES: Record<string, string> = {
-  buy: "sale",
-  sale: "sale",
-  rent: "rent",
-  lease: "rent",
-  pg: "rent",
-  "co-living": "rent",
-  coliving: "rent",
-};
+const PROPERTY_TYPE_CATEGORY_SLUGS = new Set([
+  "commercial",
+  "residential",
+  "plot",
+  "flat",
+  "agricultural",
+  "pg",
+]);
 
-function normPriceType(v: any): string {
+function normPriceType(v: any): "sale" | "rent" | "" {
   const s = normSlug(v);
-  return PRICE_TYPE_ALIASES[s] || s;
+  if (["sale", "buy"].includes(s)) return "sale";
+  if (["rent", "lease", "pg"].includes(s)) return "rent";
+  return "";
 }
 
+/* =========================================================================
+   MiniSubcategory resolver (kept)
+   ========================================================================= */
 async function resolveMiniSubcategoryId(opts: {
-  db: ReturnType<typeof getDatabase>;
-  miniSlug?: string;
-  subSlug?: string;
+  db: any;
+  miniSlug: string;
+  subSlug: string;
   categorySlug?: string;
   propertyType?: string;
   priceType?: string;
@@ -139,83 +144,88 @@ async function resolveMiniSubcategoryId(opts: {
 
   const candidates: string[] = [];
 
-  // ✅ 1) If propertyType looks like a real category group, prefer it
+  // ✅ 1) If propertyType looks like a real category group,
+  //     try that category first (commercial/residential/plot/flat/agricultural/pg)
   if (propertyType && PROPERTY_TYPE_CATEGORY_SLUGS.has(propertyType)) {
     candidates.push(propertyType);
   }
 
-  // ✅ 2) If category is a real category (commercial/agricultural/pg etc), use it
+  // ✅ 2) If categorySlug itself is a real group and not a top tab, try it
   if (categorySlug && !TOP_TABS.has(categorySlug)) {
     candidates.push(categorySlug);
   }
 
-  // ✅ 3) If category is buy/rent tab, still keep it as fallback
+  // ✅ 3) If categorySlug is a top-tab (buy/rent), we still want to try it
   if (categorySlug && TOP_TABS.has(categorySlug)) {
     candidates.push(categorySlug);
   }
 
-  // ✅ 4) Final fallback based on priceType
-  candidates.push(priceType === "rent" ? "rent" : "buy");
+  // ✅ 4) Fallback by priceType (sale->buy, rent->rent)
+  if (priceType === "rent") candidates.push("rent");
+  else candidates.push("buy");
 
+  // Remove duplicates
   const uniqueCandidates = [...new Set(candidates)].filter(Boolean);
 
-  for (const parentCategorySlug of uniqueCandidates) {
-    // Find parent category (if exists)
+  for (const catSlug of uniqueCandidates) {
     const parentCategory = await db.collection("categories").findOne({
-      slug: parentCategorySlug,
+      slug: catSlug,
     });
 
-    // Find subcategory under that parent (preferred)
-    let subcategoryDoc = await db.collection("subcategories").findOne({
+    if (!parentCategory?._id) continue;
+
+    const sub = await db.collection("subcategories").findOne({
       slug: subSlug,
-      ...(parentCategory ? { categoryId: parentCategory._id?.toString() } : {}),
+      categoryId: parentCategory._id.toString(),
     });
 
-    // If not found with categoryId, try global slug match (backup)
-    if (!subcategoryDoc) {
-      subcategoryDoc = await db.collection("subcategories").findOne({
-        slug: subSlug,
-      });
-    }
+    if (!sub?._id) continue;
 
-    if (!subcategoryDoc) continue;
-
-    const miniDoc = await db.collection("mini_subcategories").findOne({
+    const mini = await db.collection("mini_subcategories").findOne({
       slug: miniSlug,
-      subcategoryId: subcategoryDoc._id?.toString(),
+      subcategoryId: sub._id.toString(),
     });
 
-    if (miniDoc?._id) return miniDoc._id.toString();
+    if (mini?._id) return mini._id.toString();
   }
 
+  // final fallback: try unique mini slug across all minis (only if unique)
+  const minis = await db
+    .collection("mini_subcategories")
+    .find({ slug: miniSlug })
+    .project({ _id: 1 })
+    .limit(2)
+    .toArray();
+
+  if (minis.length === 1 && minis[0]?._id) return minis[0]._id.toString();
   return undefined;
 }
 
-// ✅ NEW: if UI mistakenly sends `subCategory=shop` (mini slug),
-// try resolving mini-subcategory globally (or within parent groups).
 async function resolveMiniBySlugLoose(opts: {
-  db: ReturnType<typeof getDatabase>;
+  db: any;
   miniSlug: string;
   categorySlug?: string;
   propertyType?: string;
 }): Promise<string | undefined> {
   const { db } = opts;
   const miniSlug = normSlug(opts.miniSlug);
+  const categorySlug = normSlug(opts.categorySlug);
+  const propertyType = normSlug(opts.propertyType);
+
   if (!miniSlug) return undefined;
 
-  const categorySlug = normSlug(opts.categorySlug);
-  let propertyType = normSlug(opts.propertyType);
-  if (propertyType && TYPE_ALIASES[propertyType]) propertyType = TYPE_ALIASES[propertyType];
-
   const candidates: string[] = [];
+
   if (propertyType && PROPERTY_TYPE_CATEGORY_SLUGS.has(propertyType)) candidates.push(propertyType);
-  if (categorySlug && !TOP_TABS.has(categorySlug)) candidates.push(categorySlug);
+  if (categorySlug) candidates.push(categorySlug);
 
   const uniqueCandidates = [...new Set(candidates)].filter(Boolean);
 
-  // 1) Try within candidate parent categories
-  for (const parentSlug of uniqueCandidates) {
-    const parentCategory = await db.collection("categories").findOne({ slug: parentSlug });
+  // 1) Try via category -> its subcategories -> find matching mini
+  for (const catSlug of uniqueCandidates) {
+    const parentCategory = await db.collection("categories").findOne({
+      slug: catSlug,
+    });
     if (!parentCategory?._id) continue;
 
     const subs = await db
@@ -265,6 +275,7 @@ export const getProperties: RequestHandler = async (req, res) => {
     ]);
     const qMiniSlug = pickFirst(req.query, [
       "miniSubcategory",
+      "miniSubCategory",
       "miniSubcategorySlug",
       "mini",
     ]);
@@ -301,6 +312,18 @@ export const getProperties: RequestHandler = async (req, res) => {
       propertyType = TYPE_ALIASES[category];
     }
 
+    // ✅ If URL is like ?category=buy&subCategory=commercial..., treat subCategory as propertyType group when possible
+    const subCategoryForType = normSlug(qSubCategory);
+    if (
+      !propertyType &&
+      TOP_TABS.has(category) &&
+      subCategoryForType &&
+      (TYPE_ALIASES[subCategoryForType] ||
+        PROPERTY_TYPE_CATEGORY_SLUGS.has(subCategoryForType))
+    ) {
+      propertyType = TYPE_ALIASES[subCategoryForType] || subCategoryForType;
+    }
+
     const filter: any = {
       status: "active",
       $or: [
@@ -310,7 +333,7 @@ export const getProperties: RequestHandler = async (req, res) => {
       ],
     };
 
-    // Buy/Rent tab grouping (kept, but now works better when propertyType is provided)
+    // Buy/Rent tab grouping (now includes commercial/agricultural in BUY)
     switch (category) {
       case "buy":
         if (propertyType) {
@@ -323,6 +346,8 @@ export const getProperties: RequestHandler = async (req, res) => {
                 { propertyType: "residential", priceType: "sale" },
                 { propertyType: "plot", priceType: "sale" },
                 { propertyType: "flat", priceType: "sale" },
+                { propertyType: "commercial", priceType: "sale" },
+                { propertyType: "agricultural", priceType: "sale" },
               ],
             },
             { $or: filter.$or },
@@ -342,6 +367,7 @@ export const getProperties: RequestHandler = async (req, res) => {
                 { propertyType: "residential", priceType: "rent" },
                 { propertyType: "flat", priceType: "rent" },
                 { propertyType: "commercial", priceType: "rent" },
+                { propertyType: "pg", priceType: "rent" },
               ],
             },
             { $or: filter.$or },
@@ -355,7 +381,7 @@ export const getProperties: RequestHandler = async (req, res) => {
         break;
     }
 
-    // ✅ SubCategory / Mini fallback (the big fix)
+    // ✅ SubCategory / Mini fallback
     const subCategory = normSlug(qSubCategory);
 
     // If UI mistakenly sends miniSlug in subCategory (example: subCategory=shop),
@@ -408,54 +434,28 @@ export const getProperties: RequestHandler = async (req, res) => {
     if (String(premium) === "true") filter.premium = true;
     if (String(featured) === "true") filter.featured = true;
 
-    // ✅ Case-insensitive location matching
-    if (sector) {
-      const s = String(sector).trim();
-      filter["location.sector"] = new RegExp(`^${escapeRegex(s)}$`, "i");
-    }
-    if (mohalla) {
-      const m = String(mohalla).trim();
-      filter["location.mohalla"] = new RegExp(`^${escapeRegex(m)}$`, "i");
-    }
-    if (landmark) {
-      const l = String(landmark).trim();
-      filter["location.landmark"] = new RegExp(`^${escapeRegex(l)}$`, "i");
-    }
+    // Location filters
+    if (sector) filter["location.sector"] = normSlug(sector);
+    if (mohalla) filter["location.mohalla"] = normSlug(mohalla);
+    if (landmark) filter["location.landmark"] = normSlug(landmark);
 
-    if (bedrooms) {
-      const b = String(bedrooms);
-      if (b === "4+") filter["specifications.bedrooms"] = { $gte: 4 };
-      else {
-        const n = parseInt(b, 10);
-        if (!Number.isNaN(n)) filter["specifications.bedrooms"] = n;
-      }
-    }
-    if (bathrooms) {
-      const n = parseInt(String(bathrooms), 10);
-      if (!Number.isNaN(n)) filter["specifications.bathrooms"] = n;
-    }
+    // price range
     if (minPrice || maxPrice) {
       filter.price = {};
-      if (minPrice) filter.price.$gte = parseInt(String(minPrice), 10);
-      if (maxPrice) filter.price.$lte = parseInt(String(maxPrice), 10);
-    }
-    if (minArea || maxArea) {
-      filter["specifications.area"] = {};
-      if (minArea)
-        filter["specifications.area"].$gte = parseInt(String(minArea), 10);
-      if (maxArea)
-        filter["specifications.area"].$lte = parseInt(String(maxArea), 10);
+      if (minPrice) filter.price.$gte = toInt(minPrice);
+      if (maxPrice) filter.price.$lte = toInt(maxPrice);
     }
 
-    console.log("🔍 FILTER PROPERTIES → query", {
-      category,
-      propertyType,
-      priceType: normalizedPriceType,
-      subCategory,
-      miniSubcategory: qMiniSlug ? normSlug(qMiniSlug) : null,
-      miniSubcategoryId: filter.miniSubcategoryId || null,
-      appliedFilter: JSON.stringify(filter, null, 2),
-    });
+    // specs
+    if (bedrooms) filter["specifications.bedrooms"] = toInt(bedrooms);
+    if (bathrooms) filter["specifications.bathrooms"] = toInt(bathrooms);
+
+    // area range
+    if (minArea || maxArea) {
+      filter["specifications.area"] = {};
+      if (minArea) filter["specifications.area"].$gte = toInt(minArea);
+      if (maxArea) filter["specifications.area"].$lte = toInt(maxArea);
+    }
 
     // Sorting
     const sort: any = {};
@@ -466,89 +466,63 @@ export const getProperties: RequestHandler = async (req, res) => {
       case "price_desc":
         sort.price = -1;
         break;
-      case "area_desc":
-        sort["specifications.area"] = -1;
+      case "views_desc":
+        sort.views = -1;
         break;
       case "date_asc":
         sort.createdAt = 1;
         break;
+      case "premium_first":
+        sort.premium = -1;
+        sort.createdAt = -1;
+        break;
       default:
         sort.createdAt = -1;
+        break;
     }
 
-    const pageNum = parseInt(String(page), 10);
-    const limitNum = parseInt(String(limit), 10);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     const skip = (pageNum - 1) * limitNum;
 
-    const properties = await db
-      .collection("properties")
-      .find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limitNum)
-      .toArray();
+    const [items, total] = await Promise.all([
+      db
+        .collection("properties")
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum)
+        .toArray(),
+      db.collection("properties").countDocuments(filter),
+    ]);
 
-    const total = await db.collection("properties").countDocuments(filter);
-
-    res.json({
+    const response: ApiResponse<any> = {
       success: true,
       data: {
-        properties: properties as unknown as Property[],
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum),
+        properties: items as any[],
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        filtersApplied: {
+          category,
+          propertyType,
+          subCategory: filter.subCategory || null,
+          miniSubcategoryId: filter.miniSubcategoryId || null,
+          priceType: filter.priceType || null,
         },
       },
-    });
+    };
+
+    res.json(response);
   } catch (error) {
     console.error("Error fetching properties:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch properties" });
+    res.status(500).json({ success: false, error: "Failed to fetch properties" });
   }
 };
 
 /* =========================================================================
-   PUBLIC: Category page with path params (/categories/:category/:sub?)
-   ========================================================================= */
-export const listPublicPropertiesByCategory: RequestHandler = async (req, res) => {
-  try {
-    const category = normSlug(req.params.category);
-    const sub = normSlug(req.params.sub || req.params.subcategory || "");
-
-    const q: any = { ...req.query, category };
-
-    // If URL is /categories/buy/:type or /categories/rent/:type
-    if (sub) {
-      if (TOP_TABS.has(category)) {
-        // If :type is a known property group (commercial/agricultural/etc)
-        if (TYPE_ALIASES[sub] || PROPERTY_TYPE_CATEGORY_SLUGS.has(sub)) {
-          q.propertyType = TYPE_ALIASES[sub] || sub;
-          q.priceType = normPriceType(category); // buy→sale, rent/lease→rent
-        } else {
-          // Otherwise treat it as subCategory slug
-          q.subCategory = sub;
-          q.priceType = normPriceType(category);
-        }
-      } else {
-        // If category itself is commercial/agricultural/etc, then sub is subCategory/mini slug
-        q.subCategory = sub;
-      }
-    }
-
-    req.query = q;
-    // @ts-ignore
-    return getProperties(req, res);
-  } catch (err) {
-    console.error("listPublicPropertiesByCategory error:", err);
-    return res.status(500).json({ success: false, error: "Failed to list properties" });
-  }
-};
-
-/* =========================================================================
-   PUBLIC: Get by ID
+   PUBLIC: Get single property + view increment
    ========================================================================= */
 export const getPropertyById: RequestHandler = async (req, res) => {
   try {
@@ -638,7 +612,11 @@ export const createProperty: RequestHandler = async (req, res) => {
       : "pending";
     const status: "inactive" | "active" = packageId ? "inactive" : "active";
 
-    let normalizedPropertyType = normSlug(req.body.propertyType);
+    // Normalize propertyType (UI sometimes sends propertyType=buy/rent; DB expects commercial/residential/etc)
+    const requestedTab = normSlug(req.body.propertyType);
+    let normalizedPropertyType = requestedTab;
+
+    // Normalize aliases (shop/showroom/office -> commercial etc.)
     if (TYPE_ALIASES[normalizedPropertyType]) {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
@@ -658,7 +636,30 @@ export const createProperty: RequestHandler = async (req, res) => {
     const explicitCategoryFromBody = normSlug(
       req.body.category || req.body.categorySlug || "",
     );
-    const priceTypeValue = normPriceType(req.body.priceType);
+
+    // If propertyType is a top-tab (buy/rent/lease/pg), derive real propertyType from subCategory when possible
+    if (
+      TOP_TABS.has(requestedTab) &&
+      subCategorySlug &&
+      (TYPE_ALIASES[subCategorySlug] ||
+        PROPERTY_TYPE_CATEGORY_SLUGS.has(subCategorySlug))
+    ) {
+      normalizedPropertyType = TYPE_ALIASES[subCategorySlug] || subCategorySlug;
+    }
+
+    // Normalize priceType for DB (buy->sale, rent/lease/pg->rent)
+    let priceTypeValue = normPriceType(
+      req.body.priceType || requestedTab || explicitCategoryFromBody,
+    );
+    if (requestedTab === "buy" || explicitCategoryFromBody === "buy")
+      priceTypeValue = "sale";
+    if (["rent", "lease", "pg"].includes(requestedTab) ||
+        ["rent", "lease", "pg"].includes(explicitCategoryFromBody))
+      priceTypeValue = "rent";
+
+    // Help mini resolver: if category not sent but propertyType was buy/rent, use that
+    const categoryForMiniResolve =
+      explicitCategoryFromBody || (TOP_TABS.has(requestedTab) ? requestedTab : "");
 
     let miniSubcategoryId: string | undefined = undefined;
     if (miniSubcategorySlug && subCategorySlug) {
@@ -666,7 +667,7 @@ export const createProperty: RequestHandler = async (req, res) => {
         db,
         miniSlug: miniSubcategorySlug,
         subSlug: subCategorySlug,
-        categorySlug: explicitCategoryFromBody,
+        categorySlug: categoryForMiniResolve,
         propertyType: normalizedPropertyType,
         priceType: priceTypeValue,
       });
@@ -687,7 +688,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       title: req.body.title,
       description: req.body.description,
       price: toInt(req.body.price) ?? 0,
-      priceType: req.body.priceType,
+      priceType: priceTypeValue,
       propertyType: normalizedPropertyType,
       subCategory: subCategorySlug,
       ...(miniSubcategoryId ? { miniSubcategoryId } : {}),
@@ -736,15 +737,16 @@ export const createProperty: RequestHandler = async (req, res) => {
       propertyType: propertyData.propertyType,
       subCategory: propertyData.subCategory,
       miniSubcategorySlug: miniSubcategorySlug || null,
-      miniSubcategoryId: propertyData.miniSubcategoryId || null,
+      miniSubcategoryId: (propertyData as any).miniSubcategoryId || null,
       status: propertyData.status,
       approvalStatus: propertyData.approvalStatus,
       premium: propertyData.premium,
-      packageId: propertyData.packageId || null,
+      packageId: (propertyData as any).packageId || null,
+      priceType: propertyData.priceType,
     });
 
     // Free post limit enforcement (unchanged)
-    if (!propertyData.packageId) {
+    if (!(propertyData as any).packageId) {
       const userIdStr = String(userId);
 
       const user = await db
@@ -756,354 +758,116 @@ export const createProperty: RequestHandler = async (req, res) => {
 
       if (user?.freeListingLimit) {
         FREE_POST_LIMIT = user.freeListingLimit.limit;
-        FREE_POST_PERIOD_DAYS = user.freeListingLimit.limitType;
-      } else {
-        const adminSettings = await db
-          .collection("adminSettings")
-          .findOne({ _id: "freeListingLimits" });
-
-        if (adminSettings) {
-          FREE_POST_LIMIT = adminSettings.defaultLimit || 5;
-          FREE_POST_PERIOD_DAYS = adminSettings.defaultLimitType || 30;
-        } else {
-          FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
-            ? Number(process.env.FREE_POST_LIMIT)
-            : 5;
-          FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS
-            ? Number(process.env.FREE_POST_PERIOD_DAYS)
-            : 30;
-        }
+        FREE_POST_PERIOD_DAYS = user.freeListingLimit.periodDays;
       }
 
-      const periodStart = new Date(
-        Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000,
-      );
+      const since = new Date();
+      since.setDate(since.getDate() - FREE_POST_PERIOD_DAYS);
 
-      const freePostsCount = await db.collection("properties").countDocuments({
+      const count = await db.collection("properties").countDocuments({
         ownerId: userIdStr,
-        createdAt: { $gte: periodStart },
-        $or: [
-          { packageId: { $exists: false } },
-          { packageId: null },
-          { isPaid: false },
-        ],
+        packageId: { $exists: false },
+        createdAt: { $gte: since },
       });
 
-      if (freePostsCount >= FREE_POST_LIMIT) {
-        return res.status(403).json({
+      if (count >= FREE_POST_LIMIT) {
+        return res.status(400).json({
           success: false,
-          error: `Free listing limit reached: ${FREE_POST_LIMIT} free posts allowed per ${FREE_POST_PERIOD_DAYS} days.`,
+          error: `Free listing limit reached (${FREE_POST_LIMIT}/${FREE_POST_PERIOD_DAYS} days).`,
         });
       }
     }
 
     const result = await db.collection("properties").insertOne(propertyData);
-    const propertyId = result.insertedId.toString();
 
-    // confirmation email (best-effort)
+    // Confirmation email (best effort)
     try {
-      const user = await db
-        .collection("users")
-        .findOne({ _id: new ObjectId(String(userId)) });
-      if (user?.email) {
-        await sendPropertyConfirmationEmail(
-          user.email,
-          user.name || "User",
-          propertyData.title,
-          propertyId,
-        );
-      }
+      await sendPropertyConfirmationEmail({
+        to: contactInfo?.email || "",
+        propertyTitle: propertyData.title,
+      });
     } catch (e) {
-      console.warn(
-        "Property confirmation email failed:",
-        (e as any)?.message || e,
-      );
+      console.log("Email send failed (confirmation):", e);
     }
 
-    const response: ApiResponse<{ _id: string }> = {
+    const response: ApiResponse<any> = {
       success: true,
-      data: { _id: propertyId },
-      message:
-        "Property submitted. ⏳ Pending Admin Approval. Paid listings go live only after payment verification + admin approval.",
+      data: {
+        message: "Property created successfully",
+        propertyId: result.insertedId,
+        approvalStatus: propertyData.approvalStatus,
+      },
     };
     res.status(201).json(response);
   } catch (error) {
     console.error("Error creating property:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to create property" });
+    res.status(500).json({ success: false, error: "Failed to create property" });
   }
 };
 
 /* =========================================================================
-   PUBLIC: Featured
-   ========================================================================= */
-export const getFeaturedProperties: RequestHandler = async (_req, res) => {
-  try {
-    const db = getDatabase();
-    const properties = await db
-      .collection("properties")
-      .find({ status: "active", featured: true, approvalStatus: "approved" })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .toArray();
-
-    const response: ApiResponse<Property[]> = {
-      success: true,
-      data: properties as unknown as Property[],
-    };
-    res.json(response);
-  } catch (error) {
-    console.error("Error fetching featured properties:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch featured properties" });
-  }
-};
-
-/* =========================================================================
-   USER Dashboard: My Properties
-   ========================================================================= */
-export const getUserProperties: RequestHandler = async (req, res) => {
-  try {
-    const db = getDatabase();
-    const userId = (req as any).userId;
-    if (!userId)
-      return res
-        .status(401)
-        .json({ success: false, error: "User not authenticated" });
-
-    const properties = await db
-      .collection("properties")
-      .find({ ownerId: String(userId) })
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    const response: ApiResponse<Property[]> = {
-      success: true,
-      data: properties as unknown as Property[],
-    };
-    res.json(response);
-  } catch (error) {
-    console.error("Error fetching user properties:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch user properties" });
-  }
-};
-
-/* =========================================================================
-   USER Notifications
-   ========================================================================= */
-export const getUserNotifications: RequestHandler = async (req, res) => {
-  try {
-    const userId = (req as any).userId;
-    const userType = (req as any).userType;
-    const db = getDatabase();
-
-    const userIdObj = new ObjectId(String(userId));
-
-    const userNotifications = await db
-      .collection("user_notifications")
-      .find({ userId: userIdObj })
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    let sellerNotifications: any[] = [];
-    if (["seller", "agent", "admin"].includes(String(userType || ""))) {
-      sellerNotifications = await db
-        .collection("notifications")
-        .find({ sellerId: userIdObj })
-        .sort({ createdAt: -1 })
-        .toArray();
-    }
-
-    const userNotifsWithSource = userNotifications.map((n) => ({
-      ...n,
-      _notificationSource: "user_notifications",
-    }));
-    const sellerNotifsWithSource = sellerNotifications.map((n) => ({
-      ...n,
-      _notificationSource: "notifications",
-    }));
-
-    const allNotifications = [
-      ...userNotifsWithSource,
-      ...sellerNotifsWithSource,
-    ].sort(
-      (a, b) =>
-        new Date(b.createdAt || b.sentAt).getTime() -
-        new Date(a.createdAt || a.sentAt).getTime(),
-    );
-
-    res.json({ success: true, data: allNotifications });
-  } catch (error) {
-    console.error("Error fetching user notifications:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch notifications" });
-  }
-};
-
-export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
-  try {
-    const userId = (req as any).userId;
-    const { notificationId } = req.params;
-    const db = getDatabase();
-
-    if (!ObjectId.isValid(String(notificationId))) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid notification ID" });
-    }
-
-    await db.collection("user_notifications").updateOne(
-      {
-        _id: new ObjectId(String(notificationId)),
-        userId: new ObjectId(String(userId)),
-      },
-      { $set: { isRead: true, readAt: new Date() } },
-    );
-
-    res.json({ success: true, message: "Notification marked as read" });
-  } catch (error) {
-    console.error("Error marking notification as read:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to mark notification as read" });
-  }
-};
-
-export const deleteUserNotification: RequestHandler = async (req, res) => {
-  try {
-    const userId = (req as any).userId;
-    const { notificationId } = req.params;
-    const db = getDatabase();
-
-    if (!ObjectId.isValid(String(notificationId))) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid notification ID" });
-    }
-
-    await db.collection("user_notifications").deleteOne({
-      _id: new ObjectId(String(notificationId)),
-      userId: new ObjectId(String(userId)),
-    });
-
-    res.json({ success: true, message: "Notification deleted" });
-  } catch (error) {
-    console.error("Error deleting notification:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to delete notification" });
-  }
-};
-
-/* =========================================================================
-   ADMIN: Pending list
-   ========================================================================= */
-export const getPendingProperties: RequestHandler = async (_req, res) => {
-  try {
-    const db = getDatabase();
-    const properties = await db
-      .collection("properties")
-      .find({ approvalStatus: { $in: ["pending", "pending_approval"] } })
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    const response: ApiResponse<Property[]> = {
-      success: true,
-      data: properties as unknown as Property[],
-    };
-    res.json(response);
-  } catch (error) {
-    console.error("Error fetching pending properties:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch pending properties" });
-  }
-};
-
-/* =========================================================================
-   ADMIN: Approve / Reject
+   ADMIN: approve/reject + publish paid
    ========================================================================= */
 export const updatePropertyApproval: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const { id } = req.params;
-    const { approvalStatus, adminComments, rejectionReason } = req.body as {
-      approvalStatus: "approved" | "rejected";
-      adminComments?: string;
-      rejectionReason?: string;
-    };
-    const adminId = (req as any).userId;
 
-    if (!ObjectId.isValid(String(id)))
+    if (!ObjectId.isValid(id))
       return res
         .status(400)
         .json({ success: false, error: "Invalid property ID" });
-    if (!["approved", "rejected"].includes(String(approvalStatus)))
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid approval status" });
 
-    const _id = new ObjectId(String(id));
-    const property = await db.collection("properties").findOne({ _id });
-    if (!property)
-      return res
-        .status(404)
-        .json({ success: false, error: "Property not found" });
+    const { approvalStatus, rejectionReason, adminComments } = req.body;
 
-    const now = new Date();
-    const updateData: any = { approvalStatus, updatedAt: now };
+    const update: any = {
+      approvalStatus,
+      updatedAt: new Date(),
+    };
 
     if (approvalStatus === "approved") {
-      updateData.status = "active";
-      updateData.isApproved = true;
-      updateData.approvedAt = now;
-      updateData.approvedBy = String(adminId || "");
-    } else {
-      updateData.status = "inactive";
-      updateData.isApproved = false;
-      if (rejectionReason) updateData.rejectionReason = rejectionReason;
+      update.isApproved = true;
+      update.status = "active";
+      update.approvedBy = (req as any).userId || "admin";
+      update.rejectionReason = null;
+      update.adminComments = adminComments || null;
     }
-    if (adminComments) updateData.adminComments = adminComments;
 
-    await db.collection("properties").updateOne({ _id }, { $set: updateData });
+    if (approvalStatus === "rejected") {
+      update.isApproved = false;
+      update.status = "inactive";
+      update.rejectionReason = rejectionReason || "Rejected by admin";
+      update.adminComments = adminComments || null;
+    }
 
+    await db
+      .collection("properties")
+      .updateOne({ _id: new ObjectId(id) }, { $set: update });
+
+    // Approval email (best effort)
     try {
-      if (approvalStatus === "approved") {
-        const owner = await db
-          .collection("users")
-          .findOne({ _id: new ObjectId(property.ownerId) });
-        if (owner?.email) {
-          await sendPropertyApprovalEmail(
-            owner.email,
-            owner.name || "User",
-            property.title,
-          );
-        }
+      const prop = await db.collection("properties").findOne({ _id: new ObjectId(id) });
+      if (prop?.contactInfo?.email) {
+        await sendPropertyApprovalEmail({
+          to: prop.contactInfo.email,
+          propertyTitle: prop.title || "Your Property",
+          status: approvalStatus,
+          reason: rejectionReason || "",
+        });
       }
     } catch (e) {
-      console.warn("Approval email failed:", (e as any)?.message || e);
+      console.log("Email send failed (approval):", e);
     }
 
-    const response: ApiResponse<{ message: string }> = {
-      success: true,
-      data: { message: `Property ${approvalStatus} successfully` },
-    };
-    res.json(response);
+    res.json({ success: true, data: { message: "Approval status updated" } });
   } catch (error) {
-    console.error("Error updating property approval:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to update property approval" });
+    console.error("Error updating approval:", error);
+    res.status(500).json({ success: false, error: "Failed to update approval" });
   }
 };
 
 /* =========================================================================
-   USER: Edit/Update Property
+   UPDATE property (owner)
    ========================================================================= */
 export const updateProperty: RequestHandler = async (req, res) => {
   try {
@@ -1111,42 +875,28 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const userId = (req as any).userId;
     const { id } = req.params;
 
-    if (!userId)
-      return res
-        .status(401)
-        .json({ success: false, error: "User not authenticated" });
     if (!ObjectId.isValid(id))
       return res
         .status(400)
         .json({ success: false, error: "Invalid property ID" });
 
-    const propertyId = new ObjectId(id);
-
     const property = await db
       .collection("properties")
-      .findOne({ _id: propertyId });
+      .findOne({ _id: new ObjectId(id) });
+
     if (!property)
       return res
         .status(404)
         .json({ success: false, error: "Property not found" });
 
-    const propertyOwnerId = String(property.ownerId);
-    const requestUserId = String(userId);
-    if (propertyOwnerId !== requestUserId) {
+    if (String(property.ownerId) !== String(userId)) {
       return res.status(403).json({
         success: false,
-        error: "You can only edit your own properties",
+        error: "You are not allowed to update this property",
       });
     }
 
-    const images: string[] = [];
-    if (Array.isArray((req as any).files)) {
-      (req as any).files.forEach((file: any) => {
-        images.push(`/uploads/properties/${file.filename}`);
-      });
-    }
-    const finalImages = images.length > 0 ? images : property.images || [];
-
+    // safe parse (same helper logic)
     const safeParse = <T = any>(v: any, fallback: any = {}): T => {
       if (typeof v === "string") {
         try {
@@ -1159,25 +909,14 @@ export const updateProperty: RequestHandler = async (req, res) => {
     };
 
     const location = safeParse(req.body.location, property.location || {});
-    const specifications = safeParse(
-      req.body.specifications,
-      property.specifications || {},
-    );
+    const specifications = safeParse(req.body.specifications, property.specifications || {});
     const amenities = safeParse(req.body.amenities, property.amenities || []);
-    const contactInfo = safeParse(
-      req.body.contactInfo,
-      property.contactInfo || {},
-    );
-    const shareContactInfo =
-      typeof req.body.shareContactInfo === "string"
-        ? req.body.shareContactInfo === "true"
-        : req.body.shareContactInfo !== undefined
-          ? !!req.body.shareContactInfo
-          : property.shareContactInfo || false;
+    const contactInfo = safeParse(req.body.contactInfo, property.contactInfo || {});
 
-    let normalizedPropertyType = normSlug(
-      req.body.propertyType || property.propertyType,
-    );
+    // Normalize propertyType (UI sometimes sends buy/rent; DB expects commercial/residential/etc)
+    const requestedTab = normSlug(req.body.propertyType || property.propertyType);
+    let normalizedPropertyType = requestedTab;
+
     if (TYPE_ALIASES[normalizedPropertyType]) {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
@@ -1187,79 +926,83 @@ export const updateProperty: RequestHandler = async (req, res) => {
     );
 
     const miniSlug = normSlug(
-      req.body.miniSubcategorySlug || req.body.miniSubcategory || req.body.mini || "",
+      req.body.miniSubcategorySlug ||
+        req.body.miniSubcategory ||
+        req.body.mini ||
+        "",
     );
 
-    const explicitCategoryFromBody = normSlug(req.body.category || req.body.categorySlug || "");
-    const priceTypeValue = normPriceType(req.body.priceType || property.priceType);
+    const explicitCategoryFromBody = normSlug(
+      req.body.category || req.body.categorySlug || "",
+    );
 
-    let miniSubcategoryIdUpdate: string | undefined = property.miniSubcategoryId;
+    // If propertyType is a top-tab (buy/rent/lease/pg), derive real propertyType from subCategory when possible
+    if (
+      TOP_TABS.has(requestedTab) &&
+      subCategorySlug &&
+      (TYPE_ALIASES[subCategorySlug] ||
+        PROPERTY_TYPE_CATEGORY_SLUGS.has(subCategorySlug))
+    ) {
+      normalizedPropertyType = TYPE_ALIASES[subCategorySlug] || subCategorySlug;
+    }
 
+    // Normalize priceType for DB
+    let priceTypeValue = normPriceType(
+      req.body.priceType || property.priceType || requestedTab || explicitCategoryFromBody,
+    );
+    if (requestedTab === "buy" || explicitCategoryFromBody === "buy")
+      priceTypeValue = "sale";
+    if (["rent", "lease", "pg"].includes(requestedTab) ||
+        ["rent", "lease", "pg"].includes(explicitCategoryFromBody))
+      priceTypeValue = "rent";
+
+    const categoryForMiniResolve =
+      explicitCategoryFromBody || (TOP_TABS.has(requestedTab) ? requestedTab : "");
+
+    let miniSubcategoryIdUpdate: string | undefined = undefined;
     if (miniSlug && subCategorySlug) {
-      const resolved = await resolveMiniSubcategoryId({
+      miniSubcategoryIdUpdate = await resolveMiniSubcategoryId({
         db,
         miniSlug,
         subSlug: subCategorySlug,
-        categorySlug: explicitCategoryFromBody,
+        categorySlug: categoryForMiniResolve,
         propertyType: normalizedPropertyType,
         priceType: priceTypeValue,
       });
-      if (resolved) miniSubcategoryIdUpdate = resolved;
     }
 
     const updateData: any = {
-      title: req.body.title || property.title,
-      description: req.body.description || property.description,
-      price: Number(req.body.price) || property.price,
-      priceType: req.body.priceType || property.priceType,
-      propertyType: normalizedPropertyType,
-      subCategory: subCategorySlug,
-      ...(miniSubcategoryIdUpdate
-        ? { miniSubcategoryId: miniSubcategoryIdUpdate }
-        : {}),
+      title: req.body.title ?? property.title,
+      description: req.body.description ?? property.description,
+      price: toInt(req.body.price) ?? property.price ?? 0,
+      priceType: priceTypeValue || property.priceType,
+      propertyType: normalizedPropertyType || property.propertyType,
+      subCategory: subCategorySlug || property.subCategory,
+      ...(miniSubcategoryIdUpdate ? { miniSubcategoryId: miniSubcategoryIdUpdate } : {}),
       location,
       specifications: {
         ...specifications,
-        bedrooms:
-          Number(specifications.bedrooms) || property.specifications?.bedrooms,
-        bathrooms:
-          Number(specifications.bathrooms) ||
-          property.specifications?.bathrooms,
-        area: Number(specifications.area) || property.specifications?.area,
-        floor: Number(specifications.floor) || property.specifications?.floor,
-        totalFloors:
-          Number(specifications.totalFloors) ||
-          property.specifications?.totalFloors,
+        bedrooms: toInt(specifications.bedrooms),
+        bathrooms: toInt(specifications.bathrooms),
+        area: toInt(specifications.area),
+        floor: toInt(specifications.floor),
+        totalFloors: toInt(specifications.totalFloors),
       },
-      images: finalImages,
       amenities: Array.isArray(amenities) ? amenities : [],
       contactInfo,
-      shareContactInfo,
       updatedAt: new Date(),
-    };
 
-    if (
-      property.approvalStatus === "approved" ||
-      property.status === "active"
-    ) {
-      updateData.approvalStatus = "pending";
-      updateData.status = "inactive";
-      updateData.isApproved = false;
-    }
+      // whenever updated -> pending
+      approvalStatus: "pending",
+      isApproved: false,
+      status: "inactive",
+    };
 
     await db
       .collection("properties")
-      .updateOne({ _id: propertyId }, { $set: updateData });
+      .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
 
-    console.log("📝 PROPERTY UPDATED → reset to pending", {
-      propertyId: id,
-      title: updateData.title,
-      newApprovalStatus: updateData.approvalStatus,
-      newStatus: updateData.status,
-      miniSubcategoryId: updateData.miniSubcategoryId || null,
-    });
-
-    const response: ApiResponse<{ message: string; approvalStatus: string }> = {
+    const response: ApiResponse<any> = {
       success: true,
       data: {
         message: "Property updated and set to pending review",
@@ -1274,3 +1017,18 @@ export const updateProperty: RequestHandler = async (req, res) => {
       .json({ success: false, error: "Failed to update property" });
   }
 };
+
+
+
+export const getFeaturedProperties: RequestHandler = async (req, res) => {
+  const db = getDatabase();
+  const items = await db
+    .collection("properties")
+    .find({ featured: true, status: "active" })
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .toArray();
+
+  res.json({ success: true, data: { properties: items } });
+};
+

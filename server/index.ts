@@ -21,11 +21,11 @@ import {
   createProperty,
   updateProperty as userUpdateProperty,
   getFeaturedProperties,
-  getUserProperties,
-  getUserNotifications,
-  markUserNotificationAsRead,
-  deleteUserNotification,
-  getPendingProperties,
+  // getUserProperties,
+  // getUserNotifications,
+  // markUserNotificationAsRead,
+  // deleteUserNotification,
+  // getPendingProperties,
   // updatePropertyApproval,
   upload,
 } from "./routes/properties";
@@ -893,20 +893,20 @@ export function createServer() {
   app.use("/api/reviews", reviewsRouter);
 
   // User property management routes
-  app.get("/api/user/properties", authenticateToken, getUserProperties);
+  // app.get("/api/user/properties", authenticateToken, getUserProperties);
 
-  // User notification routes
-  app.get("/api/user/notifications", authenticateToken, getUserNotifications);
-  app.put(
-    "/api/user/notifications/:notificationId/read",
-    authenticateToken,
-    markUserNotificationAsRead,
-  );
-  app.delete(
-    "/api/user/notifications/:notificationId",
-    authenticateToken,
-    deleteUserNotification,
-  );
+  // // User notification routes
+  // app.get("/api/user/notifications", authenticateToken, getUserNotifications);
+  // app.put(
+  //   "/api/user/notifications/:notificationId/read",
+  //   authenticateToken,
+  //   markUserNotificationAsRead,
+  // );
+  // app.delete(
+  //   "/api/user/notifications/:notificationId",
+  //   authenticateToken,
+  //   deleteUserNotification,
+  // );
 
   // FCM topic subscribe (optional, requires Firebase admin env)
   app.post("/api/notifications/subscribe", subscribeToTopic);
@@ -924,12 +924,12 @@ export function createServer() {
   });
 
   // Admin property approval routes
-  app.get(
-    "/api/admin/properties/pending",
-    authenticateToken,
-    requireAdmin,
-    getPendingProperties,
-  );
+  // app.get(
+  //   "/api/admin/properties/pending",
+  //   authenticateToken,
+  //   requireAdmin,
+  //   getPendingProperties,
+  // );
   app.get(
     "/api/admin/notifications/counts",
     authenticateToken,
