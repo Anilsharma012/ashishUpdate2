@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, Download } from "lucide-react";
+import { X, Download, Smartphone } from "lucide-react";
 
 const APK_URL = "/api/app/download";
 const STORAGE_KEY = "ap_download_popup_hidden";
@@ -10,7 +10,8 @@ function isAndroid() {
 }
 
 export default function AppDownloadPopup() {
-  const [open, setOpen] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [showFloatingBtn, setShowFloatingBtn] = useState(false);
 
   const android = useMemo(() => isAndroid(), []);
   const hidden = useMemo(() => {
@@ -18,76 +19,71 @@ export default function AppDownloadPopup() {
   }, []);
 
   useEffect(() => {
-    // Show only on Android + not hidden
+    setShowFloatingBtn(true);
     if (android && !hidden) {
-      const t = setTimeout(() => setOpen(true), 800);
+      const t = setTimeout(() => setPopupOpen(true), 800);
       return () => clearTimeout(t);
     }
   }, [android, hidden]);
 
-  if (!open) return null;
-
-  const close = () => {
+  const closePopup = () => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
-    setOpen(false);
+    setPopupOpen(false);
   };
 
-  const forceDownload = async () => {
-    try {
-      const res = await fetch(APK_URL);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = APK_URL.split("/").pop() || "app.apk";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch {
-      window.location.href = APK_URL; // fallback
-    }
+  const handleDownload = () => {
+    window.location.href = APK_URL;
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40">
-      <div className="w-full sm:w-[420px] mx-4 rounded-xl bg-white shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="font-semibold">Download Android App</div>
-          <button onClick={close} className="p-1 rounded hover:bg-black/5" aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="p-4 text-sm text-gray-700 space-y-3">
-          <p>
-            Ashish Properties Android app download karein. Chrome ka “Add to Home Screen”
-            PWA prompt disable hai — ab seedha APK download hoga.
-          </p>
-
-          <div className="flex gap-2">
-            <a
-              href={APK_URL}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black text-white hover:opacity-90"
-            >
-              <Download size={16} />
-              Download APK
-            </a>
-
-            <button
-              onClick={() => { window.location.href = APK_URL; }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
-              title="Try alternate download"
-            >
-              Alternate
-            </button>
+    <>
+      {showFloatingBtn && (
+        <button
+          onClick={() => popupOpen ? closePopup() : handleDownload()}
+          className="fixed bottom-24 right-4 z-[90] flex items-center justify-center w-14 h-14 rounded-full bg-green-600 text-white shadow-lg hover:bg-green-700 transition-all animate-bounce"
+          style={{ animationDuration: "2s" }}
+          title="Download APK"
+        >
+          <div className="relative">
+            <Smartphone size={24} />
+            <Download size={12} className="absolute -bottom-1 -right-1 bg-green-600 rounded-full" />
           </div>
+        </button>
+      )}
 
-          <p className="text-xs text-gray-500">
-            Note: “Unknown Sources” enable karna pad sakta hai (Settings → Security).
-          </p>
+      {popupOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40">
+          <div className="w-full sm:w-[420px] mx-4 rounded-xl bg-white shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-[#dc2626]">
+              <div className="flex items-center gap-2 text-white font-semibold">
+                <Smartphone size={20} />
+                Get the Ashish Properties App
+              </div>
+              <button onClick={closePopup} className="p-1 rounded hover:bg-white/20 text-white" aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4 text-sm text-gray-700 space-y-3">
+              <p className="text-gray-600">
+                APK installs only on Android
+              </p>
+
+              <button
+                onClick={handleDownload}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-white border-2 border-[#dc2626] text-[#dc2626] hover:bg-red-50 font-medium"
+              >
+                <Download size={20} />
+                Download App
+              </button>
+
+              <p className="text-xs text-gray-500 text-center">
+                Note: Enable "Unknown Sources" in Settings if required
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
