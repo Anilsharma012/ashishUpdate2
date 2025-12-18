@@ -355,9 +355,11 @@ export const api = {
             localStorage.removeItem("sellerToken");
             localStorage.removeItem("authToken");
           } catch {}
-          console.warn("api.get: authorization failed, redirecting to /auth");
-          if (typeof window !== "undefined")
-            setTimeout(() => (window.location.href = "/auth"), 300);
+          if (authToken) {
+            console.warn("api.get: authorization failed (had token), redirecting to /auth");
+            if (typeof window !== "undefined")
+              setTimeout(() => (window.location.href = "/auth"), 300);
+          }
           return { data: null };
         }
         throw new Error(
