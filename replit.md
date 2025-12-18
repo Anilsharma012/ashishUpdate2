@@ -2,6 +2,16 @@
 
 A production-ready full-stack property management application built with React and Express, designed for property listings, chat functionality, and comprehensive user management. The platform supports buyers, sellers, agents, and administrators with role-based access control, real-time messaging, and advanced property search capabilities.
 
+## Recent Changes (December 2025)
+
+### PWA (Progressive Web App) Implementation (December 18, 2025)
+- Implemented complete PWA functionality using vite-plugin-pwa with autoUpdate registration
+- Created PWA icons in multiple sizes (48x48, 72x72, 96x96, 144x144, 192x192, 512x512) in client/public/icons/
+- Configured manifest.webmanifest with app shortcuts, theme colors (#dc2626), and standalone display mode
+- PWAInstallPrompt component with useRegisterSW hook for update notifications and install prompts
+- Service worker with Workbox for offline caching and runtime caching strategies
+- Key files: vite.config.ts (PWA plugin config), client/components/PWAInstallPrompt.tsx, client/public/icons/
+
 ## Recent Changes (November 2025)
 
 ### Blog Management System for SEO (November 22, 2025)
