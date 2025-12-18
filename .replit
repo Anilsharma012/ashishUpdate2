@@ -37,26 +37,6 @@ externalPort = 80
 localPort = 5174
 externalPort = 3000
 
-[[ports]]
-localPort = 33627
-externalPort = 5000
-
-[[ports]]
-localPort = 36983
-externalPort = 3001
-
-[[ports]]
-localPort = 41735
-externalPort = 3002
-
-[[ports]]
-localPort = 43535
-externalPort = 3003
-
-[[ports]]
-localPort = 43611
-externalPort = 4200
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["npm", "start"]
@@ -78,6 +58,6 @@ DB_NAME = "aashish_property"
 PHONEPE_BASE_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox"
 PHONEPE_MERCHANT_ID = "SU2507281753132643929847"
 PHONEPE_SALT_INDEX = "1"
-RAZORPAY_KEY_ID=rzp_live_Rl9ATUi7GslZSt
-RAZORPAY_KEY_SECRET=wiQfSLIbWma7rSvHstd5M05x
+RAZORPAY_KEY_ID="rzp_live_Rl9ATUi7GslZSt"
+RAZORPAY_KEY_SECRET="wiQfSLIbWma7rSvHstd5M05x"
 ALLOW_LEGACY_CATEGORY_INIT = "false"
