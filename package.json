@@ -50,6 +50,8 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "twilio": "^5.8.2",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-window": "^7.4.0",
     "ws": "^8.18.3",
     "zod": "^3.23.8"
   },
