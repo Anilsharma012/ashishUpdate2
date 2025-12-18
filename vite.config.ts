@@ -1,6 +1,7 @@
 // vite.config.ts
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 const DISABLE_SOURCEMAP =
@@ -16,9 +17,110 @@ export default defineConfig(({ command }) => {
     // frontend lives in /client
     root: "client",
 
-    plugins: [react(), isDev ? expressPlugin() : undefined].filter(
-      Boolean,
-    ) as Plugin[],
+    plugins: [
+      react(),
+      isDev ? expressPlugin() : undefined,
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'icons/*.png', 'apple-touch-icon.png'],
+        devOptions: {
+          enabled: true,
+          type: 'module',
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/.*\.replit\.dev\/api\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'image-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+              },
+            },
+          ],
+        },
+        manifest: {
+          name: 'Ashish Property - Buy & Sell Properties',
+          short_name: 'Ashish Property',
+          description: 'Find and sell properties easily in Rohtak and nearby areas',
+          theme_color: '#C70000',
+          background_color: '#ffffff',
+          display: 'standalone',
+          orientation: 'portrait-primary',
+          scope: '/',
+          start_url: '/',
+          categories: ['business', 'productivity', 'lifestyle'],
+          icons: [
+            {
+              src: '/icons/icon-48.png',
+              sizes: '48x48',
+              type: 'image/png',
+            },
+            {
+              src: '/icons/icon-72.png',
+              sizes: '72x72',
+              type: 'image/png',
+            },
+            {
+              src: '/icons/icon-96.png',
+              sizes: '96x96',
+              type: 'image/png',
+            },
+            {
+              src: '/icons/icon-144.png',
+              sizes: '144x144',
+              type: 'image/png',
+            },
+            {
+              src: '/icons/icon-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/icons/icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+          shortcuts: [
+            {
+              name: 'Sell Property',
+              short_name: 'Sell',
+              description: 'Post a new property for sale',
+              url: '/post-property',
+              icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            },
+            {
+              name: 'Search Properties',
+              short_name: 'Search',
+              description: 'Search for properties',
+              url: '/search',
+              icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            },
+          ],
+        },
+      }),
+    ].filter(Boolean) as Plugin[],
 
     resolve: {
       alias: {

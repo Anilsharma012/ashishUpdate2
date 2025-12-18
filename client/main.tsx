@@ -2,18 +2,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 
-// --- BLOCK DEFAULT A2HS (Chrome PWA install prompt) ---
-declare global {
-  interface Window {
-    __A2HS_PROMPT__?: any;
-  }
-}
-window.addEventListener("beforeinstallprompt", (e: any) => {
-  // Stop Chrome's mini-infobar / install prompt
-  e.preventDefault();
-  window.__A2HS_PROMPT__ = e; // store if you ever want to show your own prompt
-});
-
 // Import API diagnostics for debugging (only in development)
 if (import.meta.env.DEV) {
   import("./utils/api-diagnostics").then(() => {
@@ -64,17 +52,6 @@ bootstrapApp();
 // Hot Module Replacement (HMR) support for development
 if (import.meta.hot) {
   import.meta.hot.accept("./App", () => {
-    // Re-render the app when App.tsx changes, but don't create a new root
-    if (root) {
-      root.render(<App />);
-    }
-  });
-}
-
-// Hot Module Replacement (HMR) support for development
-if (import.meta.hot) {
-  import.meta.hot.accept("./App", () => {
-    // Re-render the app when App.tsx changes, but don't create a new root
     if (root) {
       root.render(<App />);
     }
