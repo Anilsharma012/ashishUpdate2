@@ -24,7 +24,7 @@ export default defineConfig(({ command }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'icons/*.png', 'apple-touch-icon.png'],
         devOptions: {
-          enabled: false,
+          enabled: true,
           type: 'module',
         },
         workbox: {
