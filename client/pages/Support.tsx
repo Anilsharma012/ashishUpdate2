@@ -291,7 +291,7 @@ export default function Support() {
       <div className="min-h-screen bg-gray-50">
         <OLXStyleHeader />
 
-        <main className="pb-16">
+        <main className="pl-16">
           <div className="px-4 py-6 max-w-4xl mx-auto">
             <div className="flex items-center mb-6">
               <Button
@@ -376,7 +376,7 @@ export default function Support() {
       <div className="min-h-screen bg-gray-50">
         <OLXStyleHeader />
 
-        <main className="pb-16">
+        <main className="pl-16">
           <div className="px-4 py-6">
             <div className="flex items-center mb-6">
               <Button
@@ -492,7 +492,7 @@ export default function Support() {
     <div className="min-h-screen bg-gray-50">
       <OLXStyleHeader />
 
-      <main className="pb-16">
+      <main className="pl-16">
         <div className="px-4 py-6">
           {/* Header */}
           <div className="flex items-center mb-6">
