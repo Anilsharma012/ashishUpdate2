@@ -12,6 +12,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Header from "../components/Header";
+import OLXStyleHeader from "../components/OLXStyleHeader";
 import BottomNavigation from "../components/BottomNavigation";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -217,7 +218,7 @@ export default function Chat() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <OLXStyleHeader/>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-2 border-[#C70000] border-t-transparent rounded-full mx-auto mb-4"></div>

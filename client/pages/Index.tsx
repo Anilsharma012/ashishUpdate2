@@ -5,7 +5,7 @@ import TopBanner from "../components/TopBanner";
 import OLXStyleListings from "../components/OLXStyleListings";
 import PackagesShowcase from "../components/PackagesShowcase";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
-import PWAInstallButton from "../components/PWAInstallButton";
+{/* import PWAInstallButton from "../components/PWAInstallButton"; */}
 import BottomNavigation from "../components/BottomNavigation";
 import HomepageBanner from "../components/HomepageBanner";
 import StaticFooter from "../components/StaticFooter";
@@ -92,7 +92,7 @@ export default function Index() {
       </main>
       <BottomNavigation />
       <PWAInstallPrompt />
-      <PWAInstallButton />
+   { /*   <PWAInstallButton /> */}
       <StaticFooter />
 
       {/* Advertisement Form Modal */}
