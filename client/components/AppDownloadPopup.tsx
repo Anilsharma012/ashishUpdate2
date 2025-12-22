@@ -40,7 +40,7 @@ export default function AppDownloadPopup() {
       {showFloatingBtn && (
         <button
           onClick={() => popupOpen ? closePopup() : handleDownload()}
-          className="fixed bottom-24 right-4 z-[90] flex items-center justify-center w-14 h-14 rounded-full bg-green-600 text-white shadow-lg hover:bg-green-700 transition-all animate-bounce"
+          className="fixed bottom-20 right-4 z-[90] flex items-center justify-center w-14 h-14 rounded-full bg-green-500 text-white shadow-lg hover:bg-green-600 transition-all animate-bounce"
           style={{ animationDuration: "2s" }}
           title="Download APK"
         >

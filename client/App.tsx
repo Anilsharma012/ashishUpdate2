@@ -105,7 +105,7 @@ import Listings from "./pages/Listings";
 
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
- {/*  import AppDownloadPopup from "@/components/AppDownloadPopup"; */}
+import AppDownloadPopup from "@/components/AppDownloadPopup";
 
 // �� NEW: homepage-only logo bar
 import HomeTopBar from "@/components/HomeTopBar";
@@ -136,7 +136,7 @@ function App() {
                 <Sonner />
                 <NetworkStatus />
                 <PWAInstallPrompt />
-            {/*    <AppDownloadPopup /> */}
+                <AppDownloadPopup />
 
                 <AdsenseProvider />
                 <BrowserRouter>
