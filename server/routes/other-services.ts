@@ -254,7 +254,6 @@ export const importOtherServices: RequestHandler = async (req, res) => {
 
     // Parse CSV file (simplified implementation)
     // For production, you would use libraries like csv-parser or xlsx
-    const fs = require("fs");
     const fileContent = fs.readFileSync(req.file.path, "utf-8");
     const lines = fileContent.split("\n");
     const headers = lines[0].split(",").map((h) => h.trim());
