@@ -570,11 +570,11 @@ export default function ChatBot({
     );
   };
 
-  // Position classes
+  // Position classes - higher z-index and bottom position to stay above BottomNavigation
   const positionClasses = {
-    'bottom-right': 'fixed bottom-4 right-4 z-50',
-    'bottom-left': 'fixed bottom-4 left-4 z-50',
-    'fixed': 'fixed bottom-4 right-4 z-50',
+    'bottom-right': 'fixed bottom-20 right-4 z-[60]',
+    'bottom-left': 'fixed bottom-20 left-4 z-[60]',
+    'fixed': 'fixed bottom-20 right-4 z-[60]',
     'inline': 'relative'
   };
 

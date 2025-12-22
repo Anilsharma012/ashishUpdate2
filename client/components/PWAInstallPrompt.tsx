@@ -159,7 +159,7 @@ export function PWAInstallPrompt() {
               />
             </div>
             <div>
-              <h3 className="font-bold text-sm md:text-base">Install Ashish Property App</h3>
+              <h3 className="font-bold text-sm md:text-base">Install Ashish Properties App</h3>
               <p className="text-xs md:text-sm text-red-100">
                 Fast access, works offline
               </p>
