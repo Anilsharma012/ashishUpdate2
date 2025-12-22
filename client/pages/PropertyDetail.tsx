@@ -246,8 +246,6 @@ function LightboxModalZoom({
   wmCopies?: number;
 }) {
   const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const imgSrc = (i: number) =>
@@ -268,7 +266,6 @@ function LightboxModalZoom({
   useEffect(() => {
     if (!open) return;
     setZoom(1);
-    setOffset({ x: 0, y: 0 });
   }, [open, index]);
 
   useEffect(() => {
@@ -291,43 +288,12 @@ function LightboxModalZoom({
     };
   }, [open]);
 
-  const wheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
-    if (!open) return;
-    const delta = e.deltaY > 0 ? -0.14 : 0.14;
-    const z = Math.min(3, Math.max(1, zoom + delta));
-    setZoom(z);
-  };
-
-  const down: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!open) return;
-    dragStart.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
-  };
-
-  const move: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!open || !dragStart.current) return;
-    setOffset({
-      x: e.clientX - dragStart.current.x,
-      y: e.clientY - dragStart.current.y,
-    });
-  };
-
-  const up = () => {
-    dragStart.current = null;
-  };
-
-  // 👉 MOBILE: disable drag-to-move (no offset change on touch)
   const onTouchStart = (e: React.TouchEvent) => {
     if (!open) return;
     touchStart.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
     };
-    // ❌ NO dragStart here => no panning on touch
-  };
-
-  const onTouchMove = (_e: React.TouchEvent) => {
-    if (!open) return;
-    // intentionally empty -> mobile me drag se image move nahi hogi
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
@@ -337,16 +303,14 @@ function LightboxModalZoom({
       else if (dx > 50)
         onIndexChange((index - 1 + images.length) % images.length);
     }
-    dragStart.current = null;
     touchStart.current = null;
   };
 
   const toggleZoom = () => {
     if (!open) return;
-    if (zoom === 1) setZoom(2);
+    if (zoom === 1) setZoom(1.5);
     else {
       setZoom(1);
-      setOffset({ x: 0, y: 0 });
     }
   };
 
@@ -354,7 +318,7 @@ function LightboxModalZoom({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center overflow-hidden"
       onClick={onClose}
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -372,38 +336,40 @@ function LightboxModalZoom({
           <X className="w-6 h-6" />
         </button>
 
-        {/* Main image area – full viewport, original aspect via object-contain */}
+        {/* Main image area – fixed, no movement */}
         <div
-          className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
-          onWheel={wheel}
-          onMouseDown={down}
-          onMouseMove={move}
-          onMouseUp={up}
-          onMouseLeave={up}
+          className="relative flex items-center justify-center select-none"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
           onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          onDoubleClick={toggleZoom}
           onClick={toggleZoom}
         >
-          {/* 👇 Ye wrapper ab 90% viewport width lega, watermark isi ke andar rahega */}
+          {/* Image wrapper - fixed in center, no dragging */}
           <div
-            className="relative inline-block w-[90vw] max-w-[90vw] max-h-[90vh]"
+            className="relative"
             style={{
-              transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
-              transition: "transform 0.18s ease-out",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              transform: `scale(${zoom})`,
+              transition: "transform 0.2s ease-out",
               willChange: "transform",
             }}
           >
             <img
               src={imgSrc(index)}
               alt={title || "Property image"}
-              className="w-full h-auto max-h-[90vh] object-contain"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
               draggable={false}
               onContextMenu={(e) => e.preventDefault()}
+              style={{
+                display: "block",
+              }}
             />
 
-            {/* Watermark sirf image area ke upar */}
+            {/* Watermark stays inside image */}
             <WatermarkLayer
               text={wmText}
               copies={wmCopies}
@@ -412,10 +378,9 @@ function LightboxModalZoom({
           </div>
         </div>
 
-        {/* Helper text bottom (drag to move hataya) */}
+        {/* Helper text bottom */}
         <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-300 px-4">
-          Tap / click to zoom · Scroll to zoom · Swipe for next / previous · ESC
-          to close
+          Click to zoom · Swipe for next / previous · ESC to close
         </div>
       </div>
     </div>
