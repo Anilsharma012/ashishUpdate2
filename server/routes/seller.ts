@@ -88,7 +88,8 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
       conversations,
       unreadMessages,
     ] = await Promise.all([
-      // 1. Admin notifications (could be audience-based)
+      // 1. Admin notifications that are specifically for this user (NOT broadcast ones)
+      // Broadcast notifications (audience: "sellers", "all") are tracked via user_notifications collection
       db
         .collection("notifications")
         .find({
@@ -96,11 +97,6 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
             { userId: sellerObjId },
             { sellerId: sellerObjId },
             { targetUserId: sellerObjId },
-            { audience: { $in: ["sellers", "all"] } },
-            {
-              audience: "specific",
-              specificUsers: { $in: [String(sellerId)] },
-            },
           ],
         })
         .sort({ createdAt: -1 })
