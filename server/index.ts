@@ -978,6 +978,25 @@ export function createServer() {
     requireAdmin,
     createCategory,
   );
+  app.post(
+    "/api/admin/categories/upload-icon",
+    authenticateToken,
+    requireAdmin,
+    uploadCategoryIcon,
+    handleIconUpload,
+  );
+  app.put(
+    "/api/admin/categories/sort-order",
+    authenticateToken,
+    requireAdmin,
+    updateCategorySortOrder,
+  );
+  app.put(
+    "/api/admin/categories/:id/toggle",
+    authenticateToken,
+    requireAdmin,
+    toggleCategoryActive,
+  );
   app.put(
     "/api/admin/categories/:id",
     authenticateToken,
@@ -989,25 +1008,6 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     deleteCategory,
-  );
-  app.put(
-    "/api/admin/categories/:id/toggle",
-    authenticateToken,
-    requireAdmin,
-    toggleCategoryActive,
-  );
-  app.put(
-    "/api/admin/categories/sort-order",
-    authenticateToken,
-    requireAdmin,
-    updateCategorySortOrder,
-  );
-  app.post(
-    "/api/admin/categories/upload-icon",
-    authenticateToken,
-    requireAdmin,
-    uploadCategoryIcon,
-    handleIconUpload,
   );
 
   // ADMIN Subcategory routes
@@ -1029,6 +1029,25 @@ export function createServer() {
     requireAdmin,
     createSubcategory,
   );
+  app.post(
+    "/api/admin/subcategories/upload-icon",
+    authenticateToken,
+    requireAdmin,
+    uploadSubcategoryIcon,
+    handleSubcategoryIconUpload,
+  );
+  app.put(
+    "/api/admin/subcategories/sort-order",
+    authenticateToken,
+    requireAdmin,
+    updateSubcategorySortOrder,
+  );
+  app.put(
+    "/api/admin/subcategories/:id/toggle",
+    authenticateToken,
+    requireAdmin,
+    toggleSubcategoryActive,
+  );
   app.put(
     "/api/admin/subcategories/:id",
     authenticateToken,
@@ -1040,25 +1059,6 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     deleteSubcategory,
-  );
-  app.put(
-    "/api/admin/subcategories/:id/toggle",
-    authenticateToken,
-    requireAdmin,
-    toggleSubcategoryActive,
-  );
-  app.put(
-    "/api/admin/subcategories/sort-order",
-    authenticateToken,
-    requireAdmin,
-    updateSubcategorySortOrder,
-  );
-  app.post(
-    "/api/admin/subcategories/upload-icon",
-    authenticateToken,
-    requireAdmin,
-    uploadSubcategoryIcon,
-    handleSubcategoryIconUpload,
   );
 
   // ADMIN Mini-subcategory routes

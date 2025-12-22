@@ -3,6 +3,8 @@ import { getDatabase } from "../db/mongodb";
 import { Category, Subcategory, ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
 import multer from "multer";
+import { promises as fs } from "fs";
+import path from "path";
 import {
   getCachedCategories,
   clearCategoriesCache,
@@ -758,10 +760,6 @@ export const handleIconUpload: RequestHandler = async (req, res) => {
         error: "No image file provided",
       });
     }
-
-    // Save file to disk
-    const fs = require("fs").promises;
-    const path = require("path");
 
     const uploadDir = path.join(process.cwd(), "uploads", "category-icons");
 
