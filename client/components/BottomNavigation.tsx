@@ -79,57 +79,62 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-gray-200 z-50 shadow-lg flex flex-col items-center py-4 gap-4">
-      {navItems.map((item, index) => {
-        if (index === 2) {
-          // Center add button (FAB) in sidebar
-          return (
-            <div key="add-button" className="flex justify-center mt-auto mb-auto">
-              <Link
-                to={
-                  isAuthenticated
-                    ? "/post-property"
-                    : `/auth?returnTo=${encodeURIComponent("/post-property")}`
-                }
-                aria-label="Post ad"
-                className="w-12 h-12 bg-[#C70000] rounded-full flex items-center justify-center shadow-lg hover:bg-[#A60000] transition-colors active:scale-95"
-                title="Post ad"
-              >
-                <span className="text-white text-[9px] font-bold text-center">+</span>
-              </Link>
-            </div>
-          );
-        }
-
-        const Icon = item.icon!;
-        return (
-          <Link
-            key={item.label || index}
-            to={item.to}
-            className={`w-12 h-12 flex items-center justify-center rounded-lg relative transition-colors ${
-              item.active ? "bg-red-50 text-[#C70000]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            }`}
-            title={item.label}
-          >
-            {item.icon && (
-              <div className="relative">
-                <Icon
-                  className={`h-6 w-6 ${
-                    item.active ? "text-[#C70000]" : "text-gray-500"
-                  }`}
-                />
-                {item.label === "Chat" && unreadCount > 0 && (
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-[#C70000] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {unreadCount > 9 ? "9+" : unreadCount}
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
+      <div className="flex items-center justify-around h-16 relative">
+        {navItems.map((item, index) => {
+          if (index === 2) {
+            // Center add button (FAB) with "Post ad" text
+            return (
+              <div key="add-button" className="flex-1 flex justify-center">
+                <div className="flex flex-col items-center -translate-y-2">
+                  <Link
+                    to={
+                      isAuthenticated
+                        ? "/post-property"
+                        : `/auth?returnTo=${encodeURIComponent("/post-property")}`
+                    }
+                    aria-label="Post ad"
+                    className="w-14 h-14 bg-[#C70000] rounded-full flex items-center justify-center shadow-lg hover:bg-[#A60000] transition-colors active:scale-95 border-2 border-white"
+                  >
+                    <span className="text-white text-[10px] font-semibold leading-tight text-center tracking-wide">
+                      Post ad
                     </span>
-                  </div>
-                )}
+                  </Link>
+                </div>
               </div>
-            )}
-          </Link>
-        );
-      })}
+            );
+          }
+
+          const Icon = item.icon!;
+          return (
+            <Link
+              key={item.label || index}
+              to={item.to}
+              className={`flex-1 flex flex-col items-center justify-center py-2 relative transition-colors ${
+                item.active ? "text-[#C70000]" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {item.icon && (
+                <div className="relative">
+                  <Icon
+                    className={`h-6 w-6 mb-1 ${
+                      item.active ? "text-[#C70000]" : "text-gray-500"
+                    }`}
+                  />
+                  {item.label === "Chat" && unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#C70000] rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              {item.label && <span className="text-xs font-medium">{item.label}</span>}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
