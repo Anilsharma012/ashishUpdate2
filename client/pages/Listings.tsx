@@ -305,7 +305,9 @@ export default function Listings() {
                 {getPageTitle()}
               </h1>
               <p className="text-gray-600 mt-1">
-                {loading ? "Loading..." : `${properties.length} properties found`}
+                {loading
+                  ? "Loading..."
+                  : `${properties.length} properties found`}
               </p>
             </div>
           </div>
@@ -539,7 +541,9 @@ export default function Listings() {
                 </label>
                 <select
                   value={filters.bedrooms}
-                  onChange={(e) => handleFilterChange("bedrooms", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("bedrooms", e.target.value)
+                  }
                   className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2"
                 >
                   <option value="">Any</option>
@@ -574,7 +578,9 @@ export default function Listings() {
                 </label>
                 <input
                   value={filters.minPrice}
-                  onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("minPrice", e.target.value)
+                  }
                   placeholder="0"
                   className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2"
                 />
@@ -586,7 +592,9 @@ export default function Listings() {
                 </label>
                 <input
                   value={filters.maxPrice}
-                  onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("maxPrice", e.target.value)
+                  }
                   placeholder="10000000"
                   className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2"
                 />
@@ -640,7 +648,9 @@ export default function Listings() {
                 </label>
                 <input
                   value={filters.mohalla}
-                  onChange={(e) => handleFilterChange("mohalla", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("mohalla", e.target.value)
+                  }
                   placeholder="e.g. Shivaji Colony"
                   className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2"
                 />
