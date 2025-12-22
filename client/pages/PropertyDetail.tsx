@@ -1362,6 +1362,23 @@ export default function PropertyDetail() {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      <LightboxModalZoom
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        images={images}
+        index={currentImageIndex}
+        onIndexChange={setCurrentImageIndex}
+        title={property?.title}
+        wmText={watermarkSettings?.text || "ashishproperties.in"}
+        wmOpacity={
+          typeof watermarkSettings?.opacity === "number"
+            ? watermarkSettings.opacity
+            : 0.18
+        }
+        wmCopies={3}
+      />
     </div>
   );
 }
