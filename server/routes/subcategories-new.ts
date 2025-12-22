@@ -516,10 +516,6 @@ export const handleSubcategoryIconUpload: RequestHandler = async (req, res) => {
       });
     }
 
-    // Save file to disk
-    const fs = require("fs").promises;
-    const path = require("path");
-
     const uploadDir = path.join(process.cwd(), "uploads", "subcategory-icons");
 
     // Create directory if it doesn't exist
