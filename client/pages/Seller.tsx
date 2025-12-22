@@ -187,7 +187,7 @@ export default function Seller() {
     <div className="min-h-screen bg-gray-50">
       <OLXStyleHeader />
 
-      <main className="pb-16">
+      <main className="pl-16">
         <div className="px-4 py-6">
           {/* Seller Header */}
           <div className="flex items-center justify-between mb-6">
