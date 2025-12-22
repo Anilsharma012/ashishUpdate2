@@ -101,7 +101,7 @@ export default function Advertise() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="pb-16">
+      <main className="pl-16">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-[#C70000] to-[#A60000] text-white py-16">
           <div className="max-w-7xl mx-auto px-4 text-center">

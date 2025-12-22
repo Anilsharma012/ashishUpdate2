@@ -184,7 +184,7 @@ export default function PG() {
     <div className="min-h-screen bg-white">
       <OLXStyleHeader />
 
-      <main className="pb-16">
+      <main className="pl-16">
         <CategoryBar />
 
         <div className="px-4 py-6">
