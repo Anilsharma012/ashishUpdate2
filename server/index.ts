@@ -1029,6 +1029,25 @@ export function createServer() {
     requireAdmin,
     createSubcategory,
   );
+  app.post(
+    "/api/admin/subcategories/upload-icon",
+    authenticateToken,
+    requireAdmin,
+    uploadSubcategoryIcon,
+    handleSubcategoryIconUpload,
+  );
+  app.put(
+    "/api/admin/subcategories/sort-order",
+    authenticateToken,
+    requireAdmin,
+    updateSubcategorySortOrder,
+  );
+  app.put(
+    "/api/admin/subcategories/:id/toggle",
+    authenticateToken,
+    requireAdmin,
+    toggleSubcategoryActive,
+  );
   app.put(
     "/api/admin/subcategories/:id",
     authenticateToken,
@@ -1040,25 +1059,6 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     deleteSubcategory,
-  );
-  app.put(
-    "/api/admin/subcategories/:id/toggle",
-    authenticateToken,
-    requireAdmin,
-    toggleSubcategoryActive,
-  );
-  app.put(
-    "/api/admin/subcategories/sort-order",
-    authenticateToken,
-    requireAdmin,
-    updateSubcategorySortOrder,
-  );
-  app.post(
-    "/api/admin/subcategories/upload-icon",
-    authenticateToken,
-    requireAdmin,
-    uploadSubcategoryIcon,
-    handleSubcategoryIconUpload,
   );
 
   // ADMIN Mini-subcategory routes
