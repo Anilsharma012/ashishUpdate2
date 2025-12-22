@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { getDatabase } from "../db/mongodb";
 import { ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
+import { sendPushNotificationToUser, sendPushNotificationToUsers } from "../utils/fcm-push";
 
 interface NotificationData {
   _id?: ObjectId;
@@ -198,12 +199,24 @@ export const sendNotification: RequestHandler = async (req, res) => {
               emailsSent++;
             }
 
-            // Simulate push notification sending
+            // Send actual FCM push notification
             if (type === "push" || type === "both") {
-              // In a real implementation, you would integrate with a push notification service
-              // For now, we'll just log it
-              console.log(`🔔 Push notification sent to ${recipient.name}: ${title}`);
-              pushNotificationsSent++;
+              try {
+                const pushResult = await sendPushNotificationToUser(
+                  recipient._id.toString(),
+                  title,
+                  message,
+                  { notificationId: notificationId.toString() }
+                );
+                if (pushResult.successCount > 0) {
+                  pushNotificationsSent++;
+                  console.log(`🔔 Push notification sent to ${recipient.name}: ${title}`);
+                } else {
+                  console.log(`⚠️ No FCM token for ${recipient.name}, push skipped`);
+                }
+              } catch (pushError) {
+                console.warn(`⚠️ Push notification failed for ${recipient.name}:`, pushError);
+              }
             }
           } catch (recipientError) {
             console.error(`Failed to send to ${recipient.email}:`, recipientError);

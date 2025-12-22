@@ -8,6 +8,7 @@ import {
 import { User as FirebaseUser } from "firebase/auth";
 import { doc, setDoc, getDoc, getDocFromCache } from "firebase/firestore";
 import { auth, db, onAuthStateChange, signOutUser } from "../lib/firebase";
+import { getFcmToken, ensurePushPermissionNonBlocking, listenForegroundNotifications } from "../lib/messaging";
 
 interface User {
   id: string;
@@ -158,12 +159,41 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  // Save FCM token to backend
+  const saveFcmTokenToServer = async (authToken: string) => {
+    try {
+      await ensurePushPermissionNonBlocking();
+      const fcmToken = await getFcmToken();
+      if (fcmToken && authToken) {
+        await fetch("/api/fcm/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            token: fcmToken,
+            deviceInfo: {
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+            },
+          }),
+        });
+        console.log("📱 FCM token saved to server");
+        listenForegroundNotifications();
+      }
+    } catch (err) {
+      console.warn("FCM token save skipped:", err);
+    }
+  };
+
   // Traditional login (for existing users)
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    saveFcmTokenToServer(newToken);
   };
 
   // Firebase login handler
@@ -228,6 +258,9 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
       // Update localStorage
       localStorage.setItem("token", idToken);
       localStorage.setItem("user", JSON.stringify(userData));
+
+      // Save FCM token for push notifications
+      saveFcmTokenToServer(idToken);
 
       console.log("Firebase login completed successfully");
     } catch (error) {
