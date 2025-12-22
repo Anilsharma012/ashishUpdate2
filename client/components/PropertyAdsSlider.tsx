@@ -266,8 +266,8 @@ const PropertyAdsSlider: React.FC = () => {
     <div className="px-4 py-6 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Premium Properties</h2>
-          <span className="text-sm text-[#C70000] font-medium">{properties.length} Premium Listings</span>
+          <h2 className="text-xl font-bold text-gray-900">Featured Properties</h2>
+          <span className="text-sm text-[#C70000] font-medium">{properties.length} Featured Listings</span>
         </div>
 
         <div className="relative">
