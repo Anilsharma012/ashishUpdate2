@@ -4,6 +4,17 @@ A production-ready full-stack property management application built with React a
 
 ## Recent Changes (December 2025)
 
+### FCM Push Notifications (December 22, 2025)
+- Implemented Firebase Cloud Messaging (FCM) for real push notifications to mobile devices
+- Created FCM token management API at `/api/fcm/token` (save/remove user tokens)
+- Built server-side push utility using Firebase Admin SDK (`server/utils/fcm-push.ts`)
+- Updated notification routes to send actual FCM push when admin sends notifications
+- Client automatically saves FCM token upon user login via `useFirebaseAuth` hook
+- Invalid/expired tokens are automatically cleaned up when push delivery fails
+- Push notifications include title, body, icon, badge, and click URL
+- Service worker (`public/firebase-messaging-sw.js`) handles background notifications
+- Key files: server/routes/fcm-tokens.ts, server/utils/fcm-push.ts, client/hooks/useFirebaseAuth.tsx
+
 ### PWA (Progressive Web App) Implementation (December 18, 2025)
 - Implemented complete PWA functionality using vite-plugin-pwa with autoUpdate registration
 - Created PWA icons in multiple sizes (48x48, 72x72, 96x96, 144x144, 192x192, 512x512) in client/public/icons/
