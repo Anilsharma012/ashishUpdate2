@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { getDatabase } from "../db/mongodb";
 import { ObjectId } from "mongodb";
 import { ApiResponse } from "@shared/types";
+import fs from "fs";
 
 interface OtherService {
   _id?: string;
