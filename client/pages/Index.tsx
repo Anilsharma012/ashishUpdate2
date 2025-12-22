@@ -56,7 +56,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-white">
       <OLXStyleHeader />
-      <main className="pb-16 bg-white">
+      <main className="pl-16 bg-white">
         {/* Big banner above hero */}
         {/* <TopBanner /> */}
 
