@@ -28,7 +28,7 @@ export default function Services() {
   return (
     <div className="min-h-screen bg-white">
       <OLXStyleHeader />
-      <main className="pl-16">
+      <main className="pb-16">
         <CategoryBar />
         <div className="px-4 py-8">
           <div className="max-w-4xl mx-auto">

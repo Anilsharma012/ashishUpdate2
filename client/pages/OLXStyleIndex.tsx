@@ -10,7 +10,7 @@ export default function OLXStyleIndex() {
     <div className="min-h-screen bg-gray-50">
       <OLXStyleHeader />
 
-      <main className="pl-16">
+      <main className="pb-16">
         <CategoryBar />
         <OLXStyleListings />
       </main>

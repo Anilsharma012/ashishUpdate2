@@ -159,7 +159,7 @@ export default function User() {
     <div className="min-h-screen bg-gray-50">
       <OLXStyleHeader />
 
-      <main className="pl-16">
+      <main className="pb-16">
         <div className="px-4 py-6">
           {/* User Profile Header */}
           <Card className="mb-6">
