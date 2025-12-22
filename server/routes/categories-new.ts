@@ -3,6 +3,8 @@ import { getDatabase } from "../db/mongodb";
 import { Category, Subcategory, ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
 import multer from "multer";
+import { promises as fs } from "fs";
+import path from "path";
 import {
   getCachedCategories,
   clearCategoriesCache,
