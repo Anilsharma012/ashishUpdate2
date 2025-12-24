@@ -484,7 +484,7 @@ export default function DynamicFooter() {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <img
-                src="/ashish-logo.png"
+                src={ASHISH_LOGO_URL}
                 alt={footerSettings.companyName}
                 className="h-16 w-auto"
               />
