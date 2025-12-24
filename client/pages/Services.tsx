@@ -18,7 +18,7 @@ function setMetaTag(name: string, content: string) {
 
 export default function Services() {
   useEffect(() => {
-    document.title = "Services | Ashish Property Rohtak";
+    document.title = "Services | Ashish Properties Rohtak";
     setMetaTag(
       "description",
       "Complete real-estate services in Rohtak—Buy, Sell, Rent, Plots, Commercial, Documentation & Home Loans. Call +91-XXXXXXXXXX.",

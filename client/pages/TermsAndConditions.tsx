@@ -99,7 +99,7 @@ export default function TermsAndConditions() {
               </li>
               <li>
                 <span className="font-medium">IP Rights:</span> All trademarks,
-                logos, and content on the Site belong to Ashish Property or
+                logos, and content on the Site belong to Ashish Properties or
                 their owners.
               </li>
               <li>

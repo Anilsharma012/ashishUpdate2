@@ -1,10 +1,9 @@
 import StaticFooter from "@/components/StaticFooter";
 import { useEffect } from "react";
 
-
 export default function TermsConditions() {
   useEffect(() => {
-    const title = "Terms & Conditions | Ashish Property";
+    const title = "Terms & Conditions | Ashish Properties";
     const desc =
       "Terms of using Ashish Property’s website and services. Read service scope, pricing, liability and dispute policy.";
     document.title = title;
@@ -92,7 +91,7 @@ export default function TermsConditions() {
             </li>
             <li>
               <strong>IP Rights</strong> — All trademarks, logos, and content on
-              the Site belong to Ashish Property or their owners.
+              the Site belong to Ashish Properties or their owners.
             </li>
             <li>
               <strong>Termination</strong> — We may suspend or terminate access
@@ -111,7 +110,7 @@ export default function TermsConditions() {
         </article>
       </main>
 
-      <StaticFooter/>
+      <StaticFooter />
     </div>
   );
 }

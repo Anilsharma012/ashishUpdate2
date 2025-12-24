@@ -1,21 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import {
-  Plus,
-  Save,
-  FileText,
-  Globe,
-  Shield,
-  HelpCircle,
-} from "lucide-react";
+import { Plus, Save, FileText, Globe, Shield, HelpCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Dialog,
   DialogContent,
@@ -47,8 +35,8 @@ const pageTemplates: PageTemplate[] = [
     icon: Globe,
     description: "Company information and story",
     content: `<div class="prose prose-lg">
-<h1>About Aashish Property</h1>
-<p>Welcome to Aashish Property, your trusted partner in real estate solutions...</p>
+<h1>About Ashish Properties</h1>
+<p>Welcome to Ashish Properties, your trusted partner in real estate solutions...</p>
 
 <h2>Our Mission</h2>
 <p>To make property transactions transparent, efficient, and hassle-free.</p>
@@ -59,7 +47,7 @@ const pageTemplates: PageTemplate[] = [
 <li>Commercial Property Leasing</li>
 <li>Property Investment Consultation</li>
 </ul>
-</div>`
+</div>`,
   },
   {
     title: "Privacy Policy",
@@ -75,7 +63,7 @@ const pageTemplates: PageTemplate[] = [
 
 <h2>How We Use Your Information</h2>
 <p>We use the information we collect to provide and improve our services.</p>
-</div>`
+</div>`,
   },
   {
     title: "Terms and Conditions",
@@ -94,7 +82,7 @@ const pageTemplates: PageTemplate[] = [
 <li>Provide accurate information</li>
 <li>Comply with applicable laws</li>
 </ul>
-</div>`
+</div>`,
   },
   {
     title: "Contact Us",
@@ -112,7 +100,7 @@ const pageTemplates: PageTemplate[] = [
 
 <h2>Business Hours</h2>
 <p>Monday - Saturday: 9:00 AM - 6:00 PM</p>
-</div>`
+</div>`,
   },
   {
     title: "FAQ",
@@ -130,7 +118,7 @@ const pageTemplates: PageTemplate[] = [
 
 <h3>Q: How do I contact property owners?</h3>
 <p>A: Contact details are available for verified listings. You can call or message directly.</p>
-</div>`
+</div>`,
   },
 ];
 
@@ -138,9 +126,11 @@ export default function QuickCreatePage() {
   const { token } = useAuth();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<PageTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<PageTemplate | null>(
+    null,
+  );
   const [customMode, setCustomMode] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -233,15 +223,19 @@ export default function QuickCreatePage() {
         <DialogHeader>
           <DialogTitle>Quick Create Page</DialogTitle>
         </DialogHeader>
-        
+
         {!selectedTemplate && !customMode ? (
           // Template Selection
           <div className="space-y-6">
             <div className="text-center">
-              <h3 className="text-lg font-medium mb-2">Choose a Page Template</h3>
-              <p className="text-gray-600">Select a pre-made template or create a custom page</p>
+              <h3 className="text-lg font-medium mb-2">
+                Choose a Page Template
+              </h3>
+              <p className="text-gray-600">
+                Select a pre-made template or create a custom page
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pageTemplates.map((template) => (
                 <Card
@@ -255,8 +249,12 @@ export default function QuickCreatePage() {
                         <template.icon className="h-8 w-8 text-[#C70000]" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{template.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{template.description}</p>
+                        <h4 className="font-medium text-gray-900">
+                          {template.title}
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {template.description}
+                        </p>
                         <div className="mt-2">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {template.type}
@@ -268,7 +266,7 @@ export default function QuickCreatePage() {
                 </Card>
               ))}
             </div>
-            
+
             <div className="text-center pt-4 border-t">
               <Button variant="outline" onClick={handleCustomCreate}>
                 <FileText className="h-4 w-4 mr-2" />
@@ -283,33 +281,43 @@ export default function QuickCreatePage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center space-x-2">
                   <selectedTemplate.icon className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium text-blue-800">Template: {selectedTemplate.title}</span>
+                  <span className="font-medium text-blue-800">
+                    Template: {selectedTemplate.title}
+                  </span>
                 </div>
-                <p className="text-sm text-blue-600 mt-1">{selectedTemplate.description}</p>
+                <p className="text-sm text-blue-600 mt-1">
+                  {selectedTemplate.description}
+                </p>
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Page Title *</label>
+                <label className="block text-sm font-medium mb-2">
+                  Page Title *
+                </label>
                 <Input
                   value={formData.title}
                   onChange={(e) => {
                     const title = e.target.value;
-                    setFormData({ 
-                      ...formData, 
+                    setFormData({
+                      ...formData,
                       title,
-                      slug: generateSlug(title)
+                      slug: generateSlug(title),
                     });
                   }}
                   placeholder="Enter page title..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">URL Slug *</label>
+                <label className="block text-sm font-medium mb-2">
+                  URL Slug *
+                </label>
                 <Input
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
                   placeholder="page-url-slug"
                 />
               </div>
@@ -317,8 +325,15 @@ export default function QuickCreatePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Page Type</label>
-                <Select value={formData.type} onValueChange={(value: any) => setFormData({ ...formData, type: value })}>
+                <label className="block text-sm font-medium mb-2">
+                  Page Type
+                </label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, type: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -332,7 +347,12 @@ export default function QuickCreatePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Status</label>
-                <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, status: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -346,22 +366,27 @@ export default function QuickCreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Page Content *</label>
+              <label className="block text-sm font-medium mb-2">
+                Page Content *
+              </label>
               <Textarea
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
                 placeholder="Enter page content (HTML supported)..."
                 rows={12}
                 className="font-mono text-sm"
               />
               <p className="text-xs text-gray-500 mt-1">
-                You can use HTML tags for formatting. The content will be displayed on your website.
+                You can use HTML tags for formatting. The content will be
+                displayed on your website.
               </p>
             </div>
 
             <div className="flex justify-end space-x-2 pt-6 border-t">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSelectedTemplate(null);
                   setCustomMode(false);
@@ -369,8 +394,8 @@ export default function QuickCreatePage() {
               >
                 Back
               </Button>
-              <Button 
-                onClick={handleCreate} 
+              <Button
+                onClick={handleCreate}
                 className="bg-[#C70000] hover:bg-[#A60000]"
                 disabled={saving || !formData.title || !formData.content}
               >

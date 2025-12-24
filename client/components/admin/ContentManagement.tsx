@@ -519,10 +519,10 @@ export default function ContentManagement() {
               title: "About Us",
               slug: "about-us",
               content:
-                "<h1>About Aashish Property</h1><p>Welcome to Aashish Property, your trusted partner in real estate solutions in Rohtak and surrounding areas.</p>",
-              metaTitle: "About Us - Aashish Property",
+                "<h1>About Ashish Properties</h1><p>Welcome to Ashish Properties, your trusted partner in real estate solutions in Rohtak and surrounding areas.</p>",
+              metaTitle: "About Us - Ashish Properties",
               metaDescription:
-                "Learn more about Aashish Property, your trusted real estate partner in Rohtak.",
+                "Learn more about Ashish Properties, your trusted real estate partner in Rohtak.",
               status: "published",
               type: "page",
             },
@@ -531,7 +531,7 @@ export default function ContentManagement() {
               slug: "privacy-policy",
               content:
                 "<h1>Privacy Policy</h1><p>Your privacy is important to us. This policy explains how we collect, use, and protect your information.</p>",
-              metaTitle: "Privacy Policy - Aashish Property",
+              metaTitle: "Privacy Policy - Ashish Properties",
               metaDescription:
                 "Read our privacy policy to understand how we protect your data.",
               status: "published",
@@ -542,9 +542,9 @@ export default function ContentManagement() {
               slug: "terms-conditions",
               content:
                 "<h1>Terms and Conditions</h1><p>Please read these terms and conditions carefully before using our services.</p>",
-              metaTitle: "Terms and Conditions - Aashish Property",
+              metaTitle: "Terms and Conditions - Ashish Properties",
               metaDescription:
-                "Terms and conditions for using Aashish Property services.",
+                "Terms and conditions for using Ashish Properties services.",
               status: "published",
               type: "terms",
             },
@@ -553,7 +553,7 @@ export default function ContentManagement() {
               slug: "refund-policy",
               content:
                 "<h1>Refund Policy</h1><p>Our refund policy ensures fair treatment for all our customers.</p>",
-              metaTitle: "Refund Policy - Aashish Property",
+              metaTitle: "Refund Policy - Ashish Properties",
               metaDescription:
                 "Understanding our refund policy for property services.",
               status: "published",

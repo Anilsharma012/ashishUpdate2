@@ -119,7 +119,7 @@ export default function TestSellerNotification() {
   const fillQuickMessage = (type: string) => {
     switch (type) {
       case "welcome":
-        setTitle("Welcome to Aashish Property!");
+        setTitle("Welcome to Ashish Properties!");
         setMessage(
           "Welcome to our platform! Your seller account is now active. Start posting properties and reach thousands of potential buyers.",
         );

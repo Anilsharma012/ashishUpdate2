@@ -4,7 +4,6 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 import { Button } from "../components/ui/button";
 import StaticFooter from "@/components/StaticFooter";
 
-
 interface ContentPageData {
   _id: string;
   title: string;
@@ -30,7 +29,7 @@ export default function ContentPage() {
     if (!routeSlug) return;
 
     if (routeSlug === "terms-conditions") {
-      const metaTitle = "Terms & Conditions | Ashish Property";
+      const metaTitle = "Terms & Conditions | Ashish Properties";
       const metaDescription =
         "Terms of using Ashish Property’s website and services. Read service scope, pricing, liability and dispute policy.";
 
@@ -65,7 +64,7 @@ export default function ContentPage() {
         <h2>11. Indemnity</h2>
         <p>You agree to indemnify us for losses arising from your breach of these Terms or applicable laws.</p>
         <h2>12. IP Rights</h2>
-        <p>All trademarks, logos, and content on the Site belong to Ashish Property or their owners.</p>
+        <p>All trademarks, logos, and content on the Site belong to Ashish Properties or their owners.</p>
         <h2>13. Termination</h2>
         <p>We may suspend or terminate access for misuse or non-compliance.</p>
         <h2>14. Governing Law &amp; Dispute</h2>
@@ -109,7 +108,7 @@ export default function ContentPage() {
           if (data.data.metaTitle) {
             document.title = data.data.metaTitle;
           } else {
-            document.title = `${data.data.title} - Ashish Property`;
+            document.title = `${data.data.title} - Ashish Properties`;
           }
 
           if (data.data.metaDescription) {
@@ -197,7 +196,7 @@ export default function ContentPage() {
               </div>
               <div className="flex items-center space-x-1">
                 <User className="h-4 w-4" />
-                <span>Aashish Property</span>
+                <span>Ashish Properties</span>
               </div>
             </div>
           </header>
@@ -232,7 +231,7 @@ export default function ContentPage() {
         </article>
       </div>
 
- <StaticFooter/>
+      <StaticFooter />
     </div>
   );
 }

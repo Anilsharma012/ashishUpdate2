@@ -133,7 +133,7 @@ const FirebaseAuth = () => {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Home className="h-6 w-6" />
-            <h1 className="text-xl font-bold">ASHISH PROPERTY</h1>
+            <h1 className="text-xl font-bold">ASHISH PROPERTIES</h1>
           </div>
           <Link to="/" className="text-white hover:text-red-200">
             <ArrowLeft className="h-5 w-5" />

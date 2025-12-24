@@ -41,8 +41,8 @@ export const requestEmailOtp: RequestHandler = async (req, res) => {
       expiresAt,
     });
 
-    const subject = "Your OTP | Ashish Property";
-    const html = `<p>Your Ashish Property verification code is <strong style="font-size:18px">${code}</strong>.</p><p>This code will expire in 10 minutes. If you did not request this, you can ignore this email.</p>`;
+    const subject = "Your OTP | Ashish Properties";
+    const html = `<p>Your Ashish Properties verification code is <strong style="font-size:18px">${code}</strong>.</p><p>This code will expire in 10 minutes. If you did not request this, you can ignore this email.</p>`;
 
     try {
       await sendEmail(email, subject, html, `Your OTP code is ${code}`);

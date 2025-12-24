@@ -43,9 +43,11 @@ const ComprehensiveAuth = () => {
   const { login, isAuthenticated, user } = useAuth();
 
   const [activeTab, setActiveTab] = useState("login");
-  const [authMode, setAuthMode] = useState<"password" | "otp" | "google">("password");
+  const [authMode, setAuthMode] = useState<"password" | "otp" | "google">(
+    "password",
+  );
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);     // global button guard
+  const [loading, setLoading] = useState(false); // global button guard
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -135,7 +137,10 @@ const ComprehensiveAuth = () => {
         if (!formData.name?.trim()) throw new Error("Name is required");
         if (!formData.email?.trim() || !emailRe.test(formData.email))
           throw new Error("Enter a valid email address");
-        if (!formData.phone?.trim() || formData.phone.trim().replace(/\D/g, "").length < 10)
+        if (
+          !formData.phone?.trim() ||
+          formData.phone.trim().replace(/\D/g, "").length < 10
+        )
           throw new Error("Enter a valid 10-digit phone number");
         if (!formData.password || formData.password.length < 6)
           throw new Error("Password must be at least 6 characters");
@@ -165,7 +170,7 @@ const ComprehensiveAuth = () => {
         const { token, user } = data.data;
 
         if (!isLogin) {
-          setSuccess("Registration successful! Welcome to Ashish Property.");
+          setSuccess("Registration successful! Welcome to Ashish Properties.");
           setTimeout(() => {
             login(token, user);
             redirectToCorrectDashboard(user.userType);
@@ -236,7 +241,7 @@ const ComprehensiveAuth = () => {
       const code = e?.code || "";
       if (code === "auth/billing-not-enabled") {
         setError(
-          "Billing not enabled for reCAPTCHA Enterprise. Turn OFF Enterprise (use v2) or enable billing."
+          "Billing not enabled for reCAPTCHA Enterprise. Turn OFF Enterprise (use v2) or enable billing.",
         );
       } else if (code === "auth/too-many-requests") {
         setError("Too many attempts. Please wait a minute and try again.");
@@ -315,7 +320,7 @@ const ComprehensiveAuth = () => {
     try {
       if (!isFirebaseConfigured) {
         setError(
-          "Google authentication is not available: Firebase is not configured."
+          "Google authentication is not available: Firebase is not configured.",
         );
         return;
       }
@@ -364,7 +369,7 @@ const ComprehensiveAuth = () => {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Home className="h-6 w-6" />
-            <h1 className="text-xl font-bold">ASHISH PROPERTY</h1>
+            <h1 className="text-xl font-bold">ASHISH PROPERTIES</h1>
           </div>
           <Link to="/" className="text-white hover:text-red-200">
             <ArrowLeft className="h-5 w-5" />
@@ -375,8 +380,12 @@ const ComprehensiveAuth = () => {
       {/* Hero Section */}
       <div className="relative py-12 bg-gradient-to-r from-[#C70000] to-[#A50000] text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Welcome to Ashish Property</h2>
-          <p className="text-xl mb-8">Your trusted partner in real estate solutions</p>
+          <h2 className="text-4xl font-bold mb-4">
+            Welcome to Ashish Properties
+          </h2>
+          <p className="text-xl mb-8">
+            Your trusted partner in real estate solutions
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
               <UserCheck className="h-8 w-8 mx-auto mb-2" />
@@ -432,7 +441,11 @@ const ComprehensiveAuth = () => {
               <UnifiedLoginNotice className="mb-4" />
 
               {/* Tab Selection */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="mb-6"
+              >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login" className="font-medium">
                     Sign In
@@ -456,7 +469,7 @@ const ComprehensiveAuth = () => {
                   <Lock className="h-4 w-4 mr-1" />
                   Password
                 </Button>
-            {/*    <Button
+                {/*    <Button
                   variant={authMode === "otp" ? "default" : "outline"}
                   onClick={() => setAuthMode("otp")}
                   className={authMode === "otp" ? "bg-[#C70000]" : ""}
@@ -568,10 +581,10 @@ const ComprehensiveAuth = () => {
                     {success !== ""
                       ? "Success! Redirecting..."
                       : loading
-                      ? "Please wait..."
-                      : activeTab === "login"
-                      ? "Sign In"
-                      : "Create Account"}
+                        ? "Please wait..."
+                        : activeTab === "login"
+                          ? "Sign In"
+                          : "Create Account"}
                   </Button>
                 </form>
               )}
@@ -645,7 +658,9 @@ const ComprehensiveAuth = () => {
                           onClick={() => {
                             setOtpSent(false);
                             setFormData({ ...formData, otp: "" });
-                            try { phoneAuth.reset(); } catch {}
+                            try {
+                              phoneAuth.reset();
+                            } catch {}
                           }}
                           className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
                         >
@@ -707,7 +722,8 @@ const ComprehensiveAuth = () => {
 
                     {!isFirebaseConfigured && (
                       <p className="text-xs text-gray-500 mt-2">
-                        Google sign-in is disabled because Firebase is not configured.
+                        Google sign-in is disabled because Firebase is not
+                        configured.
                       </p>
                     )}
                   </div>
@@ -717,7 +733,8 @@ const ComprehensiveAuth = () => {
               {/* Footer Links */}
               <div className="mt-8 text-center space-y-2">
                 <p className="text-xs text-gray-500">
-                  By continuing, you agree to our Terms of Service and Privacy Policy
+                  By continuing, you agree to our Terms of Service and Privacy
+                  Policy
                 </p>
                 <Link
                   to="/"

@@ -3,9 +3,9 @@ import { useEffect } from "react";
 
 export default function PrivacyPolicy() {
   useEffect(() => {
-    const title = "Privacy Policy | Ashish Property";
+    const title = "Privacy Policy | Ashish Properties";
     const desc =
-      "How Ashish Property collects, uses, and safeguards your data. Read our privacy practices and your rights.";
+      "How Ashish Properties collects, uses, and safeguards your data. Read our privacy practices and your rights.";
     document.title = title;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
@@ -113,9 +113,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-) Security
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">) Security</h2>
             <p className="text-gray-700">
               We use reasonable technical and organizational measures to protect
               your data from unauthorized access, alteration, or misuse.
@@ -135,8 +133,8 @@ export default function PrivacyPolicy() {
               9) Contact / Grievance Officer
             </h2>
             <p className="text-gray-700">
-              Email: info@ashishproperties.in • Phone: +91-9896095599 •
-              Address: Rohtak, Haryana, India
+              Email: info@ashishproperties.in • Phone: +91-9896095599 • Address:
+              Rohtak, Haryana, India
             </p>
           </section>
 

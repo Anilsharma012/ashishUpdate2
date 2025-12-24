@@ -289,7 +289,12 @@ export const seedDatabase: RequestHandler = async (req, res) => {
         status: Math.random() > 0.1 ? "active" : "inactive",
         featured: Math.random() > 0.8,
         views: Math.floor(Math.random() * 500) + 10,
-        approvalStatus: Math.random() > 0.5 ? "pending" : (Math.random() > 0.5 ? "approved" : "rejected"),
+        approvalStatus:
+          Math.random() > 0.5
+            ? "pending"
+            : Math.random() > 0.5
+              ? "approved"
+              : "rejected",
         approvedAt: null,
         createdAt: new Date(
           Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000,
@@ -383,10 +388,10 @@ export const seedDatabase: RequestHandler = async (req, res) => {
     if (existingBanners === 0) {
       const defaultBanners = [
         {
-          title: "Welcome to Aashish Property",
+          title: "Welcome to Ashish Properties",
           description: "Find your dream property in Rohtak",
           image:
-            "https://via.placeholder.com/1200x300?text=Welcome+to+Aashish+Property",
+            "https://via.placeholder.com/1200x300?text=Welcome+to+Ashish+Properties",
           position: "homepage_top",
           active: true,
           priority: 10,
