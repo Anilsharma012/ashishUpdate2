@@ -175,15 +175,17 @@ function OLXStyleCategories() {
   /* ---------- Loading skeleton ---------- */
   if (loading) {
     return (
-      <div className="bg-white">
-        <div className="px-4 pb-6 pt-6">
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="w-14 h-14 bg-gray-200 rounded-lg animate-pulse mb-2" />
-                <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
-              </div>
-            ))}
+      <div className="bg-gradient-to-br from-[#C70000] to-red-700 py-6 md:py-8 lg:py-10">
+        <div className="px-4">
+          <div className="bg-white rounded-xl shadow-lg border border-red-200 p-6 md:p-8">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-5 md:gap-6">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="w-16 h-16 bg-gray-200 rounded-xl animate-pulse mb-3" />
+                  <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
