@@ -16,6 +16,7 @@ import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
 import { useNavigate } from "react-router-dom";
 
 export default function OLXStyleHeader() {
+  const navigate = useNavigate();
   const { user, token, isAuthenticated } = useAuth();
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [resubmittedCount, setResubmittedCount] = useState<number>(0);
