@@ -13,6 +13,7 @@ import { ROHTAK_AREAS } from "@shared/types";
 import MenuDashboard from "./MenuDashboard";
 import { useNotificationsUnread } from "../hooks/useNotificationsUnread";
 import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
+import { useNavigate } from "react-router-dom";
 
 export default function OLXStyleHeader() {
   const { user, token, isAuthenticated } = useAuth();
