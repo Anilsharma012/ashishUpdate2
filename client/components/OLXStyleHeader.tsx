@@ -163,10 +163,12 @@ export default function OLXStyleHeader() {
 
           {/* CENTER: Desktop-only big logo - hide in landscape collapsed mode */}
           {!(isLandscape && isLandscapeCollapsed) && (
-            <a
-              href="/"
-              className="hidden md:inline-flex absolute left-1/2 -translate-x-1/2 items-center center-brand transition-all duration-300"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/");
+              }}
+              className="hidden md:inline-flex absolute left-1/2 -translate-x-1/2 items-center center-brand transition-all duration-300 bg-transparent border-none cursor-pointer p-0"
             >
               <img
                 src={ASHISH_LOGO_URL}
@@ -174,7 +176,7 @@ export default function OLXStyleHeader() {
                 className="block h-24 lg:h-28 xl:h-32 w-auto select-none"
                 style={{ maxHeight: "none" }}
               />
-            </a>
+            </button>
           )}
 
           {/* RIGHT: Actions */}
