@@ -150,7 +150,7 @@ export default function LoginModal() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center">
-            Sign in to Ashish Property
+            Sign in to Ashish Properties
           </CardTitle>
         </CardHeader>
         <CardContent>
