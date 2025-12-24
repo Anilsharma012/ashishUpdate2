@@ -136,7 +136,7 @@ export default function AdminLogin() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@aashishproperty.com"
+                  placeholder="admin@ashishproperties.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -188,23 +188,6 @@ export default function AdminLogin() {
           </Button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">
-            Demo Credentials:
-          </h3>
-          <div className="text-sm text-blue-700 space-y-1">
-            <p>
-              <strong>Email:</strong> admin@aashishproperty.com
-            </p>
-            <p>
-              <strong>Phone:</strong> +919876543210
-            </p>
-            <p>
-              <strong>Password:</strong> admin123
-            </p>
-          </div>
-        </div>
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-600">

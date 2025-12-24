@@ -309,10 +309,10 @@ async function seedDatabase() {
 
     // Create admin user
     console.log("Creating admin user...");
-    const adminPassword = await bcrypt.hash("admin123", 10);
+    const adminPassword = await bcrypt.hash("Ashish@9991", 10);
     const adminUser = {
       name: "Administrator",
-      email: "admin@aashishproperty.com",
+      email: "admin@ashishproperties.com",
       phone: "+919876543210",
       password: adminPassword,
       userType: "admin",
@@ -664,9 +664,9 @@ async function seedDatabase() {
     console.log(`- Messages: ${messages.length}`);
 
     console.log("\n🔐 Admin Credentials:");
-    console.log("Email: admin@aashishproperty.com");
+    console.log("Email: admin@ashishproperties.com");
     console.log("Phone: +919876543210");
-    console.log("Password: admin123");
+    console.log("Password: Ashish@9991");
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {

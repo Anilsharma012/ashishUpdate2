@@ -564,11 +564,11 @@ export const initializeAdmin: RequestHandler = async (req, res) => {
     }
 
     // Create default admin user
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("Ashish@9991", 10);
 
     const adminUser = {
       name: "Administrator",
-      email: "admin@aashishproperty.com",
+      email: "admin@ashishproperties.com",
       phone: "+91 9876543210",
       password: hashedPassword,
       userType: "admin",
@@ -588,8 +588,8 @@ export const initializeAdmin: RequestHandler = async (req, res) => {
       success: true,
       message: "Admin user created successfully",
       data: {
-        email: "admin@aashishproperty.com",
-        password: "admin123",
+        email: "admin@ashishproperties.com",
+        password: "Ashish@9991",
       },
     });
   } catch (error) {

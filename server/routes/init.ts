@@ -151,10 +151,10 @@ export async function seedDefaultData() {
       .findOne({ userType: "admin" });
     if (!existingAdmin) {
       console.log("📝 Creating default admin user...");
-      const hashedPassword = await bcrypt.hash("admin123", 10);
+      const hashedPassword = await bcrypt.hash("Ashish@9991", 10);
       const adminUser = {
         name: "Administrator",
-        email: "admin@aashishproperty.com",
+        email: "admin@ashishproperties.com",
         phone: "+91 9876543210",
         password: hashedPassword,
         userType: "admin",

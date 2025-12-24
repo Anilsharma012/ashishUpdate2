@@ -141,7 +141,7 @@ export default function SystemStatus() {
       const data = await response.json();
 
       if (data.success) {
-        alert('System initialized successfully! Admin credentials:\nEmail: admin@aashishproperty.com\nPassword: admin123');
+        alert('System initialized successfully! Admin credentials:\nEmail: admin@ashishproperties.com\nPassword: Ashish@9991');
         await checkSystemHealth(); // Refresh health status
       } else {
         setError(data.error || 'Failed to initialize system');

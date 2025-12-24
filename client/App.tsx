@@ -327,7 +327,7 @@ function App() {
                       path="/admin/reviews"
                       element={<AdminReviewsModeration />}
                     />
-                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/ashish/login" element={<AdminLogin />} />
                     <Route
                       path="/admin/ads/categories"
                       element={<CategoriesPage />}

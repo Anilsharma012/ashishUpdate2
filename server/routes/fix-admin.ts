@@ -15,11 +15,11 @@ export const forceCreateAdmin: RequestHandler = async (req, res) => {
     console.log("🗑️ Removed existing admin users");
 
     // Create new admin user
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("Ashish@9991", 10);
 
     const adminUser = {
       name: "Administrator",
-      email: "admin@aashishproperty.com",
+      email: "admin@ashishproperties.com",
       phone: "+91 9876543210",
       password: hashedPassword,
       userType: "admin",
@@ -59,8 +59,8 @@ export const forceCreateAdmin: RequestHandler = async (req, res) => {
           userType: createdAdmin?.userType,
         },
         credentials: {
-          email: "admin@aashishproperty.com",
-          password: "admin123",
+          email: "admin@ashishproperties.com",
+          password: "Ashish@9991",
         },
       },
     };
