@@ -92,7 +92,7 @@ export default function TermsConditions() {
             </li>
             <li>
               <strong>IP Rights</strong> — All trademarks, logos, and content on
-              the Site belong to Ashish Property or their owners.
+              the Site belong to Ashish Properties or their owners.
             </li>
             <li>
               <strong>Termination</strong> — We may suspend or terminate access
