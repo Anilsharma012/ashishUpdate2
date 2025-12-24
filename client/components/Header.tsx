@@ -175,7 +175,7 @@ export default function Header() {
             <Link to="/categories" className="py-2">Categories</Link>
             <Link to="/maps" className="py-2 font-bold">Maps</Link>
             <Link to="/new-projects" className="py-2 font-bold">New Projects</Link>
-            <Link to="/post-property" className="py-2">Post Property</Link>
+            <Link to="/post-property" className="py-2">Post Properties</Link>
           </nav>
         </div>
       )}
