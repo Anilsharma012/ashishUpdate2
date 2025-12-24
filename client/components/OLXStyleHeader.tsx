@@ -13,8 +13,10 @@ import { ROHTAK_AREAS } from "@shared/types";
 import MenuDashboard from "./MenuDashboard";
 import { useNotificationsUnread } from "../hooks/useNotificationsUnread";
 import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
+import { useNavigate } from "react-router-dom";
 
 export default function OLXStyleHeader() {
+  const navigate = useNavigate();
   const { user, token, isAuthenticated } = useAuth();
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [resubmittedCount, setResubmittedCount] = useState<number>(0);
@@ -144,25 +146,29 @@ export default function OLXStyleHeader() {
             </button>
 
             {/* Mobile-only logo - responsive to landscape */}
-            <a
-              href="/"
-              className={`flex items-center md:hidden transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-8" : "h-[10rem]"}`}
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/");
+              }}
+              className={`flex items-center md:hidden transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-8" : "h-[10rem]"} bg-transparent border-none cursor-pointer p-0`}
             >
               <img
                 src={ASHISH_LOGO_URL}
                 alt={APP_NAME}
                 className={`w-auto transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-7" : "h-[10rem]"}`}
               />
-            </a>
+            </button>
           </div>
 
           {/* CENTER: Desktop-only big logo - hide in landscape collapsed mode */}
           {!(isLandscape && isLandscapeCollapsed) && (
-            <a
-              href="/"
-              className="hidden md:inline-flex absolute left-1/2 -translate-x-1/2 items-center center-brand transition-all duration-300"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/");
+              }}
+              className="hidden md:inline-flex absolute left-1/2 -translate-x-1/2 items-center center-brand transition-all duration-300 bg-transparent border-none cursor-pointer p-0"
             >
               <img
                 src={ASHISH_LOGO_URL}
@@ -170,7 +176,7 @@ export default function OLXStyleHeader() {
                 className="block h-24 lg:h-28 xl:h-32 w-auto select-none"
                 style={{ maxHeight: "none" }}
               />
-            </a>
+            </button>
           )}
 
           {/* RIGHT: Actions */}
@@ -351,45 +357,63 @@ export default function OLXStyleHeader() {
             ) : (
               <div className="p-4">
                 <nav className="space-y-2 mb-8">
-                  <a
-                    href="/"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  <button
+                    onClick={() => {
+                      navigate("/");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Home
-                  </a>
-                  <a
-                    href="/categories"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/categories");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Categories
-                  </a>
-                  <a
-                    href="/packages"
-                    className="block px-4 py-3 hover:bg-red-50 rounded-lg text-[#C70000] font-semibold flex items-center gap-2"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/packages");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-lg text-[#C70000] font-semibold flex items-center gap-2 bg-transparent border-none cursor-pointer"
                   >
                     <PackageIcon className="h-4 w-4" /> Buy Packages
-                  </a>
-                  <a
-                    href="/post-property"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/post-property");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Sell
-                  </a>
-                  <a
-                    href="/my-account"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/my-account");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     My Account
-                  </a>
+                  </button>
                 </nav>
 
                 <div className="pt-6 border-t border-gray-200">
-                  <a
-                    href="/auth"
-                    className="block px-4 py-3 text-[#C70000] font-semibold hover:bg-red-50 rounded-lg"
+                  <button
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-[#C70000] font-semibold hover:bg-red-50 rounded-lg bg-transparent border-none cursor-pointer"
                   >
                     Login / Sign Up
-                  </a>
+                  </button>
                 </div>
               </div>
             )}

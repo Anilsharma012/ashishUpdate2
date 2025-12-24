@@ -392,7 +392,7 @@ export default function MenuDashboard({ onClose }: MenuDashboardProps) {
               ? [
                   {
                     icon: <Plus className="h-4 w-4" />,
-                    label: "Post Property",
+                    label: "Post Properties",
                     path: "/post-property",
                   },
                   {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { enhancedApi } from "@/lib/api-enhanced";
+import { ASHISH_LOGO_URL } from "@/lib/constants";
 import {
   MapPin,
   Phone,
@@ -483,7 +484,7 @@ export default function DynamicFooter() {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <img
-                src="/ashish-logo.png"
+                src={ASHISH_LOGO_URL}
                 alt={footerSettings.companyName}
                 className="h-16 w-auto"
               />
@@ -611,7 +612,7 @@ export default function DynamicFooter() {
                       to="/post-property"
                       className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
                     >
-                      Post Property
+                      Post Properties
                     </Link>
                   </li>
                   <li>

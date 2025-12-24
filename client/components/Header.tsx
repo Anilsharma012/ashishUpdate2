@@ -30,8 +30,9 @@ const getLocalFavIds = (): string[] => {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchType, setSearchType] =
-    useState<"sectors" | "colonies" | "landmarks">("sectors");
+  const [searchType, setSearchType] = useState<
+    "sectors" | "colonies" | "landmarks"
+  >("sectors");
 
   const { token } = useAuth();
   const [wishlistCount, setWishlistCount] = useState<number>(0);
@@ -123,7 +124,6 @@ export default function Header() {
       <div className="flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-        
           <span className="text-lg font-bold tracking-wide">
             ASHISH PROPERTIES
           </span>
@@ -132,10 +132,7 @@ export default function Header() {
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
           {/* Wishlist */}
-          <Link
-            to="/wishlist"
-            className="p-2 bg-white/20 rounded-lg relative"
-          >
+          <Link to="/wishlist" className="p-2 bg-white/20 rounded-lg relative">
             <Heart className="h-5 w-5" />
             {wishlistCount > 0 && (
               <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] rounded-full bg-white text-[#C70000] text-[10px] leading-[18px] text-center font-bold">
@@ -171,11 +168,21 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-[#A60000] px-4 py-4">
           <nav className="flex flex-col space-y-3">
-            <Link to="/" className="py-2">Home</Link>
-            <Link to="/categories" className="py-2">Categories</Link>
-            <Link to="/maps" className="py-2 font-bold">Maps</Link>
-            <Link to="/new-projects" className="py-2 font-bold">New Projects</Link>
-            <Link to="/post-property" className="py-2">Post Property</Link>
+            <Link to="/" className="py-2">
+              Home
+            </Link>
+            <Link to="/categories" className="py-2">
+              Categories
+            </Link>
+            <Link to="/maps" className="py-2 font-bold">
+              Maps
+            </Link>
+            <Link to="/new-projects" className="py-2 font-bold">
+              New Projects
+            </Link>
+            <Link to="/post-property" className="py-2">
+              Post Properties
+            </Link>
           </nav>
         </div>
       )}
@@ -188,9 +195,7 @@ export default function Header() {
               key={t}
               onClick={() => setSearchType(t)}
               className={`px-3 py-1 rounded-full text-xs ${
-                searchType === t
-                  ? "bg-white text-[#C70000]"
-                  : "bg-white/20"
+                searchType === t ? "bg-white text-[#C70000]" : "bg-white/20"
               }`}
             >
               {t}
