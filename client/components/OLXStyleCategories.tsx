@@ -234,18 +234,18 @@ function OLXStyleCategories() {
                     <img
                       src={category.icon}
                       alt={category.name}
-                      className="w-full h-full object-contain p-1"
+                      className="w-full h-full object-contain p-2"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
                     />
                   ) : (
                     IconComponent && (
-                      <IconComponent className="h-7 w-7 text-[#C70000]" />
+                      <IconComponent className="h-8 w-8 text-white" />
                     )
                   )}
                 </div>
-                <span className="text-xs text-gray-800 text-center font-medium leading-tight">
+                <span className="text-xs text-gray-900 text-center font-semibold leading-tight">
                   {category.name.length > 12
                     ? `${category.name.substring(0, 12)}...`
                     : category.name}
