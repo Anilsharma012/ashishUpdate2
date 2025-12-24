@@ -125,7 +125,7 @@ export default function MyAccount() {
                   className="justify-start h-12"
                 >
                   <Home className="h-5 w-5 mr-3" />
-                  Post Property
+                  Post Properties
                 </Button>
 
                 <Button
