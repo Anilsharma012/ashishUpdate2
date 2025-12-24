@@ -357,45 +357,63 @@ export default function OLXStyleHeader() {
             ) : (
               <div className="p-4">
                 <nav className="space-y-2 mb-8">
-                  <a
-                    href="/"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  <button
+                    onClick={() => {
+                      navigate("/");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Home
-                  </a>
-                  <a
-                    href="/categories"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/categories");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Categories
-                  </a>
-                  <a
-                    href="/packages"
-                    className="block px-4 py-3 hover:bg-red-50 rounded-lg text-[#C70000] font-semibold flex items-center gap-2"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/packages");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-lg text-[#C70000] font-semibold flex items-center gap-2 bg-transparent border-none cursor-pointer"
                   >
                     <PackageIcon className="h-4 w-4" /> Buy Packages
-                  </a>
-                  <a
-                    href="/post-property"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/post-property");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     Sell
-                  </a>
-                  <a
-                    href="/my-account"
-                    className="block px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700"
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/my-account");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg text-gray-700 bg-transparent border-none cursor-pointer"
                   >
                     My Account
-                  </a>
+                  </button>
                 </nav>
 
                 <div className="pt-6 border-t border-gray-200">
-                  <a
-                    href="/auth"
-                    className="block px-4 py-3 text-[#C70000] font-semibold hover:bg-red-50 rounded-lg"
+                  <button
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-[#C70000] font-semibold hover:bg-red-50 rounded-lg bg-transparent border-none cursor-pointer"
                   >
                     Login / Sign Up
-                  </a>
+                  </button>
                 </div>
               </div>
             )}
