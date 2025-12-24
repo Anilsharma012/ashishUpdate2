@@ -60,8 +60,8 @@ export default defineConfig(({ command }) => {
           ],
         },
         manifest: {
-          name: "Ashish Property - Buy & Sell Properties",
-          short_name: "Ashish Property",
+          name: "Ashish Properties - Buy & Sell Properties",
+          short_name: "Ashish Properties",
           description:
             "Find and sell properties easily in Rohtak and nearby areas",
           theme_color: "#C70000",
