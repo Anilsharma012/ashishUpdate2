@@ -95,6 +95,7 @@ export async function startRazorpayPayment(opts: StartRazorpayOpts): Promise<{ o
       razorpay_signature: string;
     }) {
       // 3) verify on backend
+      console.log("💰 Razorpay payment handler called:", response);
       try {
         const verifyResp = await api.post("payments/razorpay/verify", {
           razorpay_order_id: response.razorpay_order_id,
@@ -102,16 +103,18 @@ export async function startRazorpayPayment(opts: StartRazorpayOpts): Promise<{ o
           razorpay_signature: response.razorpay_signature,
           transactionId,
         });
+        console.log("✅ Verify response:", verifyResp?.data);
         const vr = verifyResp?.data;
         if (vr?.success) {
-          alert("Payment successful ✅");
-          // TODO: redirect/update UI if needed
+          alert("Payment successful! Your property is now pending admin approval.");
+          // Redirect to My Ads page
+          window.location.href = "/my-properties";
         } else {
-          alert(vr?.error || "Verification failed");
+          alert(vr?.error || "Payment verification failed. Please contact support.");
         }
       } catch (err: any) {
-        console.error("verify error:", err);
-        alert(err?.message || "Verification failed");
+        console.error("❌ Verify error:", err);
+        alert(err?.message || "Payment verification failed. Please contact support.");
       }
     },
     modal: {
