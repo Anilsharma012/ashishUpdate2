@@ -8,7 +8,7 @@ import {
 import { User as FirebaseUser } from "firebase/auth";
 import { doc, setDoc, getDoc, getDocFromCache } from "firebase/firestore";
 import { auth, db, onAuthStateChange, signOutUser } from "../lib/firebase";
-import { getFcmToken, ensurePushPermissionNonBlocking, listenForegroundNotifications } from "../lib/messaging";
+import { getFcmToken, ensurePushPermission, listenForegroundNotifications } from "../lib/messaging";
 
 interface User {
   id: string;
@@ -162,7 +162,11 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
   // Save FCM token to backend
   const saveFcmTokenToServer = async (authToken: string) => {
     try {
-      await ensurePushPermissionNonBlocking();
+      const permission = await ensurePushPermission();
+      if (permission !== "granted") {
+        console.log("📱 Push notification permission not granted:", permission);
+        return;
+      }
       const fcmToken = await getFcmToken();
       if (fcmToken && authToken) {
         await fetch("/api/fcm/token", {
