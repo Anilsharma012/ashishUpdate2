@@ -221,31 +221,31 @@ function OLXStyleCategories() {
                     handleCategoryClick(category);
                   }
                 }}
-                className={`flex flex-col items-center cursor-pointer active:scale-95 transition-all ${
-                  isActive ? "opacity-100 scale-110" : "opacity-85 hover:opacity-100"
+                className={`flex flex-col items-center cursor-pointer active:scale-95 transition-transform ${
+                  isActive ? "opacity-100" : "opacity-90"
                 }`}
               >
                 <div
-                  className={`w-16 h-16 ${
-                    isActive ? "bg-[#C70000]" : "bg-gradient-to-br from-red-500 to-[#C70000]"
-                  } border-2 border-white rounded-xl flex items-center justify-center mb-3 shadow-md hover:shadow-lg transition-all overflow-hidden`}
+                  className={`w-14 h-14 ${
+                    isActive ? "bg-red-100" : "bg-red-50"
+                  } border border-red-100 rounded-lg flex items-center justify-center mb-2 hover:bg-red-100 transition-colors overflow-hidden`}
                 >
                   {hasUploadedIcon ? (
                     <img
                       src={category.icon}
                       alt={category.name}
-                      className="w-full h-full object-contain p-2"
+                      className="w-full h-full object-contain p-1"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
                     />
                   ) : (
                     IconComponent && (
-                      <IconComponent className="h-8 w-8 text-white" />
+                      <IconComponent className="h-7 w-7 text-[#C70000]" />
                     )
                   )}
                 </div>
-                <span className="text-xs text-gray-900 text-center font-semibold leading-tight">
+                <span className="text-xs text-gray-800 text-center font-medium leading-tight">
                   {category.name.length > 12
                     ? `${category.name.substring(0, 12)}...`
                     : category.name}
