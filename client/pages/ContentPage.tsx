@@ -30,7 +30,7 @@ export default function ContentPage() {
     if (!routeSlug) return;
 
     if (routeSlug === "terms-conditions") {
-      const metaTitle = "Terms & Conditions | Ashish Property";
+      const metaTitle = "Terms & Conditions | Ashish Properties";
       const metaDescription =
         "Terms of using Ashish Property’s website and services. Read service scope, pricing, liability and dispute policy.";
 
