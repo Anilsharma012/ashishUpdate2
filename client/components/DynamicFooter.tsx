@@ -611,7 +611,7 @@ export default function DynamicFooter() {
                       to="/post-property"
                       className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
                     >
-                      Post Property
+                      Post Properties
                     </Link>
                   </li>
                   <li>
