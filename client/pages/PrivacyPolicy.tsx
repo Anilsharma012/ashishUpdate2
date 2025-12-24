@@ -3,9 +3,9 @@ import { useEffect } from "react";
 
 export default function PrivacyPolicy() {
   useEffect(() => {
-    const title = "Privacy Policy | Ashish Property";
+    const title = "Privacy Policy | Ashish Properties";
     const desc =
-      "How Ashish Property collects, uses, and safeguards your data. Read our privacy practices and your rights.";
+      "How Ashish Properties collects, uses, and safeguards your data. Read our privacy practices and your rights.";
     document.title = title;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
