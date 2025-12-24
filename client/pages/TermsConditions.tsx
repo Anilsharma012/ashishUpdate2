@@ -1,7 +1,6 @@
 import StaticFooter from "@/components/StaticFooter";
 import { useEffect } from "react";
 
-
 export default function TermsConditions() {
   useEffect(() => {
     const title = "Terms & Conditions | Ashish Properties";
@@ -111,7 +110,7 @@ export default function TermsConditions() {
         </article>
       </main>
 
-      <StaticFooter/>
+      <StaticFooter />
     </div>
   );
 }

@@ -113,9 +113,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-) Security
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">) Security</h2>
             <p className="text-gray-700">
               We use reasonable technical and organizational measures to protect
               your data from unauthorized access, alteration, or misuse.
@@ -135,8 +133,8 @@ export default function PrivacyPolicy() {
               9) Contact / Grievance Officer
             </h2>
             <p className="text-gray-700">
-              Email: info@ashishproperties.in • Phone: +91-9896095599 •
-              Address: Rohtak, Haryana, India
+              Email: info@ashishproperties.in • Phone: +91-9896095599 • Address:
+              Rohtak, Haryana, India
             </p>
           </section>
 

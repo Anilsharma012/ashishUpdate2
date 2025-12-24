@@ -6,19 +6,29 @@ import { useAuth } from "../hooks/useAuth";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Phone, 
-  Lock, 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Phone,
+  Lock,
   MessageSquare,
   CheckCircle,
   Clock,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import OLXStyleHeader from "../components/OLXStyleHeader";
 import UnifiedLoginNotice from "../components/UnifiedLoginNotice";
@@ -34,7 +44,7 @@ const EnhancedUserLogin = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
   const [isLogin, setIsLogin] = useState(true);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,13 +72,15 @@ const EnhancedUserLogin = () => {
     let interval: NodeJS.Timeout;
     if (otpTimer > 0) {
       interval = setInterval(() => {
-        setOtpTimer(time => time - 1);
+        setOtpTimer((time) => time - 1);
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [otpTimer]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -98,29 +110,34 @@ const EnhancedUserLogin = () => {
           }
         : formData;
 
-      console.log(`Making ${isLogin ? 'login' : 'registration'} request...`);
-      console.log('Payload:', payload);
+      console.log(`Making ${isLogin ? "login" : "registration"} request...`);
+      console.log("Payload:", payload);
 
       const response = await api.post(endpoint, payload);
-      console.log(`${isLogin ? 'Login' : 'Registration'} complete response:`, response);
+      console.log(
+        `${isLogin ? "Login" : "Registration"} complete response:`,
+        response,
+      );
 
       // Check if we got a valid response
       if (!response) {
-        throw new Error('No response received from server');
+        throw new Error("No response received from server");
       }
 
-      console.log('Response data:', response.data);
-      console.log('Response success flag:', response.data?.success);
+      console.log("Response data:", response.data);
+      console.log("Response success flag:", response.data?.success);
 
       // Handle successful response
       if (response.data && response.data.success === true) {
         const { token, user } = response.data.data;
-        console.log('Token received:', !!token);
-        console.log('User received:', user);
+        console.log("Token received:", !!token);
+        console.log("User received:", user);
 
         if (!isLogin) {
           // Registration successful
-          setSuccess("Registration successful! Welcome to Ashish Properties. Redirecting to home page...");
+          setSuccess(
+            "Registration successful! Welcome to Ashish Properties. Redirecting to home page...",
+          );
           setLoading(false);
 
           // Login user and redirect after showing success message
@@ -135,21 +152,29 @@ const EnhancedUserLogin = () => {
           const dashboardRoutes = {
             seller: "/seller-dashboard",
             buyer: "/buyer-dashboard",
-            agent: "/agent-dashboard"
+            agent: "/agent-dashboard",
           };
 
-          const targetRoute = dashboardRoutes[user.userType as keyof typeof dashboardRoutes] || "/user-dashboard";
+          const targetRoute =
+            dashboardRoutes[user.userType as keyof typeof dashboardRoutes] ||
+            "/user-dashboard";
           navigate(targetRoute);
         }
       } else {
         // Handle unsuccessful response
-        const errorMessage = response.data?.error || response.data?.message || (isLogin ? "Invalid credentials" : "Registration failed");
-        console.log('Registration/Login failed with error:', errorMessage);
+        const errorMessage =
+          response.data?.error ||
+          response.data?.message ||
+          (isLogin ? "Invalid credentials" : "Registration failed");
+        console.log("Registration/Login failed with error:", errorMessage);
         setError(errorMessage);
       }
     } catch (error: any) {
-      console.error(`${isLogin ? 'Login' : 'Registration'} error:`, error);
-      setError(error.message || `${isLogin ? 'Login' : 'Registration'} failed. Please try again.`);
+      console.error(`${isLogin ? "Login" : "Registration"} error:`, error);
+      setError(
+        error.message ||
+          `${isLogin ? "Login" : "Registration"} failed. Please try again.`,
+      );
     } finally {
       if (isLogin || !success) {
         setLoading(false);
@@ -168,7 +193,9 @@ const EnhancedUserLogin = () => {
     setError("");
 
     try {
-      const response = await api.post("auth/send-otp", { phone: formData.phone });
+      const response = await api.post("auth/send-otp", {
+        phone: formData.phone,
+      });
 
       if (response.data?.success) {
         setOtpSent(true);
@@ -197,7 +224,7 @@ const EnhancedUserLogin = () => {
     try {
       const response = await api.post("auth/verify-otp", {
         phone: formData.phone,
-        otp: formData.otp
+        otp: formData.otp,
       });
 
       if (response.data?.success) {
@@ -216,7 +243,7 @@ const EnhancedUserLogin = () => {
           name: formData.phone,
           email: "",
           phone: formData.phone,
-          userType: "seller"
+          userType: "seller",
         };
         const mockToken = "otp-token-" + Date.now();
         login(mockToken, mockUser);
@@ -230,36 +257,35 @@ const EnhancedUserLogin = () => {
   };
 
   // Google Login
-// Google Login
-const handleGoogleLogin = async () => {
-  if (!isFirebaseConfigured) {
-    setError("Google login is unavailable. Firebase is not configured.");
-    return;
-  }
-  setLoading(true);
-  setError("");
-  try {
-    const { idToken } = await signInWithGoogle();
-
-    const { data } = await api.post("auth/google", {
-      idToken,
-      userType: formData.userType || "buyer",
-    });
-
-    if (data?.success) {
-      const { token, user } = data.data;
-      login(token, user);
-      redirectToCorrectDashboard(user.userType);
-    } else {
-      throw new Error(data?.error || "Google login failed");
+  // Google Login
+  const handleGoogleLogin = async () => {
+    if (!isFirebaseConfigured) {
+      setError("Google login is unavailable. Firebase is not configured.");
+      return;
     }
-  } catch (err: any) {
-    setError(err.message || "Google login failed");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError("");
+    try {
+      const { idToken } = await signInWithGoogle();
 
+      const { data } = await api.post("auth/google", {
+        idToken,
+        userType: formData.userType || "buyer",
+      });
+
+      if (data?.success) {
+        const { token, user } = data.data;
+        login(token, user);
+        redirectToCorrectDashboard(user.userType);
+      } else {
+        throw new Error(data?.error || "Google login failed");
+      }
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const redirectToCorrectDashboard = (userType: string) => {
     const routes = {
@@ -276,7 +302,7 @@ const handleGoogleLogin = async () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <OLXStyleHeader />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
           <Card>
@@ -288,7 +314,7 @@ const handleGoogleLogin = async () => {
                 Choose your preferred login method
               </p>
             </CardHeader>
-            
+
             <CardContent>
               {error && (
                 <Alert className="mb-4 border-red-200 bg-red-50">
@@ -319,7 +345,11 @@ const handleGoogleLogin = async () => {
                     <MessageSquare className="h-4 w-4 mr-1" />
                     OTP
                   </TabsTrigger>
-                  <TabsTrigger value="google" className="text-xs" disabled={!isFirebaseConfigured}>
+                  <TabsTrigger
+                    value="google"
+                    className="text-xs"
+                    disabled={!isFirebaseConfigured}
+                  >
                     <Mail className="h-4 w-4 mr-1" />
                     Gmail
                   </TabsTrigger>
@@ -450,8 +480,13 @@ const handleGoogleLogin = async () => {
                       className="w-full bg-[#C70000] hover:bg-[#A50000] text-white"
                       disabled={loading || success !== ""}
                     >
-                      {success !== "" ? "Success! Redirecting..." :
-                       (loading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account"))}
+                      {success !== ""
+                        ? "Success! Redirecting..."
+                        : loading
+                          ? "Please wait..."
+                          : isLogin
+                            ? "Sign In"
+                            : "Create Account"}
                     </Button>
                   </form>
                 </TabsContent>
@@ -477,8 +512,8 @@ const handleGoogleLogin = async () => {
                           />
                         </div>
                       </div>
-                      
-                      <Button 
+
+                      <Button
                         onClick={handleSendOTP}
                         className="w-full bg-[#C70000] hover:bg-[#A50000] text-white"
                         disabled={loading}
@@ -510,7 +545,7 @@ const handleGoogleLogin = async () => {
                         </p>
                       </div>
 
-                      <Button 
+                      <Button
                         type="submit"
                         className="w-full bg-[#C70000] hover:bg-[#A50000] text-white"
                         disabled={loading}
@@ -523,14 +558,14 @@ const handleGoogleLogin = async () => {
                           type="button"
                           onClick={() => {
                             setOtpSent(false);
-                            setFormData({...formData, otp: ""});
+                            setFormData({ ...formData, otp: "" });
                           }}
                           className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
                         >
                           <ArrowLeft className="h-4 w-4 mr-1" />
                           Change Number
                         </button>
-                        
+
                         {otpTimer > 0 ? (
                           <span className="text-sm text-gray-500 flex items-center">
                             <Clock className="h-4 w-4 mr-1" />
@@ -557,9 +592,13 @@ const handleGoogleLogin = async () => {
                       <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
                         <Mail className="h-8 w-8 text-[#C70000]" />
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">Quick Login with Gmail</h3>
+                      <h3 className="text-lg font-semibold mb-2">
+                        Quick Login with Gmail
+                      </h3>
                       <p className="text-gray-600 text-sm">
-                        {isFirebaseConfigured ? "Sign in instantly with your Google account" : "Google login is disabled because Firebase is not configured."}
+                        {isFirebaseConfigured
+                          ? "Sign in instantly with your Google account"
+                          : "Google login is disabled because Firebase is not configured."}
                       </p>
                     </div>
 
@@ -576,10 +615,22 @@ const handleGoogleLogin = async () => {
                       ) : (
                         <div className="flex items-center">
                           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            <path
+                              fill="#4285F4"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            />
+                            <path
+                              fill="#34A853"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            />
+                            <path
+                              fill="#FBBC05"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            />
+                            <path
+                              fill="#EA4335"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            />
                           </svg>
                           Continue with Google
                         </div>
@@ -594,8 +645,8 @@ const handleGoogleLogin = async () => {
               </Tabs>
 
               <div className="mt-6 text-center">
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className="text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center"
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />

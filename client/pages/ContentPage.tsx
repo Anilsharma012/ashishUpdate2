@@ -4,7 +4,6 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 import { Button } from "../components/ui/button";
 import StaticFooter from "@/components/StaticFooter";
 
-
 interface ContentPageData {
   _id: string;
   title: string;
@@ -232,7 +231,7 @@ export default function ContentPage() {
         </article>
       </div>
 
- <StaticFooter/>
+      <StaticFooter />
     </div>
   );
 }
