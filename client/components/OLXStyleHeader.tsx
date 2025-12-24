@@ -146,17 +146,19 @@ export default function OLXStyleHeader() {
             </button>
 
             {/* Mobile-only logo - responsive to landscape */}
-            <a
-              href="/"
-              className={`flex items-center md:hidden transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-8" : "h-[10rem]"}`}
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/");
+              }}
+              className={`flex items-center md:hidden transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-8" : "h-[10rem]"} bg-transparent border-none cursor-pointer p-0`}
             >
               <img
                 src={ASHISH_LOGO_URL}
                 alt={APP_NAME}
                 className={`w-auto transition-all duration-300 ${isLandscape && isLandscapeCollapsed ? "h-7" : "h-[10rem]"}`}
               />
-            </a>
+            </button>
           </div>
 
           {/* CENTER: Desktop-only big logo - hide in landscape collapsed mode */}
