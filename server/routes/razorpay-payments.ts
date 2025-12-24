@@ -5,6 +5,8 @@ import { ObjectId } from "mongodb";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import "dotenv/config";
+import { sendPushNotificationToUser } from "../utils/fcm-push";
+import { sendPaymentSuccessEmail } from "../utils/mailer";
 
 /** ---------- Config ---------- */
 interface RazorpayConfig {
@@ -232,10 +234,18 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
     );
 
     // 2) If property/package present → attach package snapshot & mark as PENDING APPROVAL (not live)
+    let propertyTitle = "";
+    let propertyId = "";
     if (tx.propertyId && tx.packageId) {
       const pkg = await db.collection("ad_packages").findOne({
         _id: new ObjectId(String(tx.packageId)),
       });
+
+      const property = await db.collection("properties").findOne({
+        _id: new ObjectId(String(tx.propertyId)),
+      });
+      propertyTitle = property?.title || "Your Property";
+      propertyId = String(tx.propertyId);
 
       if (pkg) {
         const packageExpiry = new Date();
@@ -274,10 +284,10 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
               packageExpiry,
 
               // visibility / moderation
-              // After successful payment, property is immediately active
-              status: "active",
-              approvalStatus: "approved",
-              isApproved: true,
+              // After successful payment, property goes to PENDING status - awaits admin approval
+              status: "pending",
+              approvalStatus: "pending",
+              isApproved: false,
 
               // UX extras
               featured: pkg.type === "featured" || pkg.type === "premium",
@@ -293,11 +303,68 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
       }
     }
 
+    // 3) Get user info and send notifications
+    const user = await db.collection("users").findOne({ _id: tx.userId });
+    const userName = user?.name || "User";
+    const userEmail = user?.email;
+
+    // Create in-app notification for user
+    await db.collection("user_notifications").insertOne({
+      userId: tx.userId,
+      title: "Payment Successful!",
+      message: `Your payment of ₹${tx.amount} for "${propertyTitle}" was successful. Your property is now waiting for admin approval.`,
+      type: "payment_success",
+      delivered: true,
+      read: false,
+      deliveredAt: now,
+      createdAt: now,
+      metadata: {
+        transactionId: String(tx._id),
+        propertyId: propertyId,
+        amount: tx.amount,
+        paymentId: razorpay_payment_id,
+      },
+    });
+
+    // Send FCM push notification
+    try {
+      await sendPushNotificationToUser(
+        String(tx.userId),
+        "Payment Successful!",
+        `Your payment of ₹${tx.amount} was successful. Property is waiting for admin approval.`,
+        {
+          type: "payment_success",
+          propertyId: propertyId,
+          transactionId: String(tx._id),
+        }
+      );
+      console.log("✅ Push notification sent for payment success");
+    } catch (pushErr) {
+      console.warn("⚠️ Failed to send push notification:", pushErr);
+    }
+
+    // Send email notification
+    if (userEmail) {
+      try {
+        await sendPaymentSuccessEmail(
+          userEmail,
+          userName,
+          propertyTitle,
+          Number(tx.amount || 0),
+          razorpay_payment_id,
+          String(tx.packageName || "Package")
+        );
+        console.log("✅ Payment success email sent to:", userEmail);
+      } catch (emailErr) {
+        console.warn("⚠️ Failed to send payment email:", emailErr);
+      }
+    }
+
     const response: ApiResponse<{ message: string; transactionId: string }> = {
       success: true,
       data: {
         message:
-          "Payment verified. Property is pending admin approval (will go live after approval).",
+          "Payment verified successfully! Your property is now waiting for admin approval.",
         transactionId: String(tx._id),
       },
     };

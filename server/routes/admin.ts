@@ -4,6 +4,8 @@ import { ApiResponse, Category } from "@shared/types";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import { clearCategoriesCache } from "../utils/categoryCache";
+import { sendPushNotificationToUser } from "../utils/fcm-push";
+import { sendPropertyApprovalEmail } from "../utils/mailer";
 
 // Get all users (admin only)
 export const getAllUsers: RequestHandler = async (req, res) => {
@@ -1057,15 +1059,88 @@ export const approvePremiumProperty: RequestHandler = async (req, res) => {
       updateData.adminComments = adminComments;
     }
 
-    const result = await db
+    // Get property before updating for notification
+    const existingProperty = await db
       .collection("properties")
-      .updateOne({ _id: new ObjectId(propertyId) }, { $set: updateData });
+      .findOne({ _id: new ObjectId(propertyId) });
 
-    if (result.matchedCount === 0) {
+    if (!existingProperty) {
       return res.status(404).json({
         success: false,
         error: "Property not found",
       });
+    }
+
+    const result = await db
+      .collection("properties")
+      .updateOne({ _id: new ObjectId(propertyId) }, { $set: updateData });
+
+    // Send notifications to property owner
+    if (existingProperty.userId) {
+      const propertyOwner = await db.collection("users").findOne({
+        _id: new ObjectId(String(existingProperty.userId)),
+      });
+
+      if (propertyOwner) {
+        const userName = propertyOwner.name || "User";
+        const userEmail = propertyOwner.email;
+        const propertyTitle = existingProperty.title || "Your Property";
+
+        // Create in-app notification
+        const notificationData = {
+          userId: new ObjectId(String(existingProperty.userId)),
+          title: action === "approve" 
+            ? "Premium Property Approved!" 
+            : "Premium Property Review",
+          message: action === "approve"
+            ? `Congratulations! Your premium property "${propertyTitle}" has been approved and is now live on the platform.`
+            : `Your premium property "${propertyTitle}" needs attention. ${adminComments || "Please review the details."}`,
+          type: action === "approve" ? "premium_approved" : "premium_rejected",
+          delivered: true,
+          read: false,
+          deliveredAt: new Date(),
+          createdAt: new Date(),
+          metadata: {
+            propertyId: propertyId,
+            action: action,
+          },
+        };
+
+        await db.collection("user_notifications").insertOne(notificationData);
+
+        // Send FCM push notification
+        try {
+          await sendPushNotificationToUser(
+            String(existingProperty.userId),
+            notificationData.title,
+            notificationData.message,
+            {
+              type: notificationData.type,
+              propertyId: propertyId,
+            }
+          );
+          console.log(`✅ Push notification sent for premium property ${action}`);
+        } catch (pushErr) {
+          console.warn("⚠️ Failed to send push notification:", pushErr);
+        }
+
+        // Send email notification
+        if (userEmail) {
+          try {
+            await sendPropertyApprovalEmail(
+              userEmail,
+              userName,
+              propertyTitle,
+              propertyId,
+              action === "approve",
+              adminComments
+            );
+            console.log(`✅ Premium property ${action} email sent to:`, userEmail);
+          } catch (emailErr) {
+            console.warn("⚠️ Failed to send approval email:", emailErr);
+          }
+        }
+      }
     }
 
     const response: ApiResponse<{ message: string }> = {
@@ -1948,6 +2023,74 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     console.log(
       `✅ Property approval updated: ${result.modifiedCount} documents modified`,
     );
+
+    // Send notifications to property owner
+    if (existingProperty.userId) {
+      const propertyOwner = await db.collection("users").findOne({
+        _id: new ObjectId(String(existingProperty.userId)),
+      });
+
+      if (propertyOwner) {
+        const userName = propertyOwner.name || "User";
+        const userEmail = propertyOwner.email;
+        const propertyTitle = existingProperty.title || "Your Property";
+
+        // Create in-app notification
+        const notificationData = {
+          userId: new ObjectId(String(existingProperty.userId)),
+          title: approvalStatus === "approved" 
+            ? "Property Approved!" 
+            : "Property Review Update",
+          message: approvalStatus === "approved"
+            ? `Great news! Your property "${propertyTitle}" has been approved and is now live on the platform.`
+            : `Your property "${propertyTitle}" needs some attention. ${req.body.rejectionReason || "Please review the details."}`,
+          type: approvalStatus === "approved" ? "property_approved" : "property_rejected",
+          delivered: true,
+          read: false,
+          deliveredAt: new Date(),
+          createdAt: new Date(),
+          metadata: {
+            propertyId: propertyId,
+            approvalStatus: approvalStatus,
+          },
+        };
+
+        await db.collection("user_notifications").insertOne(notificationData);
+
+        // Send FCM push notification
+        try {
+          await sendPushNotificationToUser(
+            String(existingProperty.userId),
+            notificationData.title,
+            notificationData.message,
+            {
+              type: notificationData.type,
+              propertyId: propertyId,
+            }
+          );
+          console.log(`✅ Push notification sent for property ${approvalStatus}`);
+        } catch (pushErr) {
+          console.warn("⚠️ Failed to send push notification:", pushErr);
+        }
+
+        // Send email notification
+        if (userEmail) {
+          try {
+            await sendPropertyApprovalEmail(
+              userEmail,
+              userName,
+              propertyTitle,
+              propertyId,
+              approvalStatus === "approved",
+              req.body.rejectionReason
+            );
+            console.log(`✅ Property ${approvalStatus} email sent to:`, userEmail);
+          } catch (emailErr) {
+            console.warn("⚠️ Failed to send approval email:", emailErr);
+          }
+        }
+      }
+    }
 
     const response: ApiResponse<{ message: string }> = {
       success: true,

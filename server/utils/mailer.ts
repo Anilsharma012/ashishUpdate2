@@ -377,3 +377,85 @@ export async function sendPropertyApprovalEmail(
       : `Your property "${propertyTitle}" needs some attention.`,
   );
 }
+
+export async function sendPaymentSuccessEmail(
+  email: string,
+  name: string,
+  propertyTitle: string,
+  amount: number,
+  transactionId: string,
+  packageName: string,
+) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { 
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 5px 5px; }
+          .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: center; }
+          .payment-info { background-color: #d4edda; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #28a745; }
+          .pending-info { background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ffc107; }
+          .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Payment Successful!</h1>
+          </div>
+          <div class="content">
+            <p>Hello <strong>${name}</strong>,</p>
+            
+            <div class="payment-info">
+              <p><strong>Payment Details:</strong></p>
+              <p class="amount">₹${amount}</p>
+              <p><strong>Transaction ID:</strong> ${transactionId}</p>
+              <p><strong>Property:</strong> ${propertyTitle}</p>
+              <p><strong>Package:</strong> ${packageName}</p>
+              <p><strong>Date:</strong> ${dateStr}</p>
+            </div>
+
+            <div class="pending-info">
+              <p><strong>Status: Waiting for Admin Approval</strong></p>
+              <p>Your property listing is now being reviewed by our team. Once approved, it will be visible to buyers on the platform.</p>
+              <p><strong>Expected time:</strong> 24-48 hours</p>
+            </div>
+
+            <p><strong>What happens next?</strong></p>
+            <ul>
+              <li>Our team will review your property details and images</li>
+              <li>You will receive a notification once your property is approved</li>
+              <li>After approval, your property will be live and visible to buyers</li>
+            </ul>
+
+            <p>Thank you for choosing Ashish Properties!</p>
+
+            <p>Best regards,<br><strong>Ashish Properties Team</strong></p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2024 Ashish Properties. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return await sendEmail(
+    email,
+    `Payment Successful - ₹${amount} | Waiting for Approval`,
+    html,
+    `Your payment of ₹${amount} for "${propertyTitle}" was successful. Your property is now waiting for admin approval.`
+  );
+}
