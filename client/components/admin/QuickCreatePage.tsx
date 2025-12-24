@@ -47,8 +47,8 @@ const pageTemplates: PageTemplate[] = [
     icon: Globe,
     description: "Company information and story",
     content: `<div class="prose prose-lg">
-<h1>About Aashish Property</h1>
-<p>Welcome to Aashish Property, your trusted partner in real estate solutions...</p>
+<h1>About Ashish Properties</h1>
+<p>Welcome to Ashish Properties, your trusted partner in real estate solutions...</p>
 
 <h2>Our Mission</h2>
 <p>To make property transactions transparent, efficient, and hassle-free.</p>
