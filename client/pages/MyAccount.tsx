@@ -46,7 +46,9 @@ export default function MyAccount() {
               <div className="w-16 h-16 bg-[#C70000] rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">My Account</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                My Account
+              </h1>
               <p className="text-gray-600 mb-6">
                 Please sign in to access your account and dashboard
               </p>
@@ -95,7 +97,9 @@ export default function MyAccount() {
 
             {/* Account Options */}
             <div className="p-6 space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Options</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Account Options
+              </h2>
 
               {/* Dashboard Link */}
               <Button
@@ -104,9 +108,12 @@ export default function MyAccount() {
                     admin: "/admin",
                     seller: "/seller-dashboard",
                     buyer: "/buyer-dashboard",
-                    agent: "/agent-dashboard"
+                    agent: "/agent-dashboard",
                   };
-                  const targetRoute = dashboardRoutes[user?.userType as keyof typeof dashboardRoutes];
+                  const targetRoute =
+                    dashboardRoutes[
+                      user?.userType as keyof typeof dashboardRoutes
+                    ];
                   if (targetRoute) {
                     window.location.href = targetRoute;
                   }
@@ -120,7 +127,7 @@ export default function MyAccount() {
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <Button
-                  onClick={() => window.location.href = "/post-property"}
+                  onClick={() => (window.location.href = "/post-property")}
                   variant="outline"
                   className="justify-start h-12"
                 >
@@ -129,7 +136,7 @@ export default function MyAccount() {
                 </Button>
 
                 <Button
-                  onClick={() => window.location.href = "/chat"}
+                  onClick={() => (window.location.href = "/chat")}
                   variant="outline"
                   className="justify-start h-12"
                 >
@@ -138,7 +145,9 @@ export default function MyAccount() {
                 </Button>
 
                 <Button
-                  onClick={() => window.location.href = "/properties?owner=" + user?.id}
+                  onClick={() =>
+                    (window.location.href = "/properties?owner=" + user?.id)
+                  }
                   variant="outline"
                   className="justify-start h-12"
                 >
@@ -147,7 +156,7 @@ export default function MyAccount() {
                 </Button>
 
                 <Button
-                  onClick={() => window.location.href = "/"}
+                  onClick={() => (window.location.href = "/")}
                   variant="outline"
                   className="justify-start h-12"
                 >
@@ -158,11 +167,20 @@ export default function MyAccount() {
 
               {/* Account Info */}
               <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">Account Information</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Account Information
+                </h3>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p><strong>Phone:</strong> {user?.phone}</p>
-                  <p><strong>Account Type:</strong> {user?.userType?.toUpperCase()}</p>
-                  <p><strong>Member Since:</strong> Recent</p>
+                  <p>
+                    <strong>Phone:</strong> {user?.phone}
+                  </p>
+                  <p>
+                    <strong>Account Type:</strong>{" "}
+                    {user?.userType?.toUpperCase()}
+                  </p>
+                  <p>
+                    <strong>Member Since:</strong> Recent
+                  </p>
                 </div>
               </div>
 
