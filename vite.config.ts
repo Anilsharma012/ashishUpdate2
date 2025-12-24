@@ -24,11 +24,13 @@ export default defineConfig(({ command }) => {
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "icons/*.png", "apple-touch-icon.png"],
         devOptions: {
-          enabled: true,
+          enabled: false,
           type: "module",
         },
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+          navigateFallback: "index.html",
+          navigateFallbackDenylist: [/^\/api\//],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/.*\.replit\.dev\/api\/.*/i,
