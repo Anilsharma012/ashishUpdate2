@@ -329,7 +329,6 @@ export const getProperties: RequestHandler = async (req, res) => {
       $or: [
         { approvalStatus: "approved" },
         { approvalStatus: { $exists: false } },
-        { approvalStatus: "pending" },
       ],
     };
 
