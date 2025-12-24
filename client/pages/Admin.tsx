@@ -239,7 +239,7 @@ export default function Admin() {
 
     if (!isAuthenticated) {
       console.log("Not authenticated, redirecting to admin login");
-      window.location.href = "/ashu/login";
+      window.location.href = "/ashish/login";
       return;
     }
 
@@ -250,7 +250,7 @@ export default function Admin() {
         user?.userType,
         "redirecting to admin login",
       );
-      window.location.href = "/ashu/login";
+      window.location.href = "/ashish/login";
       return;
     }
 
