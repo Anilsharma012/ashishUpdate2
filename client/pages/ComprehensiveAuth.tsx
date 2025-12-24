@@ -165,7 +165,7 @@ const ComprehensiveAuth = () => {
         const { token, user } = data.data;
 
         if (!isLogin) {
-          setSuccess("Registration successful! Welcome to Ashish Property.");
+          setSuccess("Registration successful! Welcome to Ashish Properties.");
           setTimeout(() => {
             login(token, user);
             redirectToCorrectDashboard(user.userType);
@@ -364,7 +364,7 @@ const ComprehensiveAuth = () => {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Home className="h-6 w-6" />
-            <h1 className="text-xl font-bold">ASHISH PROPERTY</h1>
+            <h1 className="text-xl font-bold">ASHISH PROPERTIES</h1>
           </div>
           <Link to="/" className="text-white hover:text-red-200">
             <ArrowLeft className="h-5 w-5" />
@@ -375,7 +375,7 @@ const ComprehensiveAuth = () => {
       {/* Hero Section */}
       <div className="relative py-12 bg-gradient-to-r from-[#C70000] to-[#A50000] text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Welcome to Ashish Property</h2>
+          <h2 className="text-4xl font-bold mb-4">Welcome to Ashish Properties</h2>
           <p className="text-xl mb-8">Your trusted partner in real estate solutions</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
