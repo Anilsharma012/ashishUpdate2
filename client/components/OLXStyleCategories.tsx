@@ -221,14 +221,14 @@ function OLXStyleCategories() {
                     handleCategoryClick(category);
                   }
                 }}
-                className={`flex flex-col items-center cursor-pointer active:scale-95 transition-transform ${
-                  isActive ? "opacity-100" : "opacity-90"
+                className={`flex flex-col items-center cursor-pointer active:scale-95 transition-all ${
+                  isActive ? "opacity-100 scale-110" : "opacity-85 hover:opacity-100"
                 }`}
               >
                 <div
-                  className={`w-14 h-14 ${
-                    isActive ? "bg-red-100" : "bg-red-50"
-                  } border border-red-100 rounded-lg flex items-center justify-center mb-2 hover:bg-red-100 transition-colors overflow-hidden`}
+                  className={`w-16 h-16 ${
+                    isActive ? "bg-[#C70000]" : "bg-gradient-to-br from-red-500 to-[#C70000]"
+                  } border-2 border-white rounded-xl flex items-center justify-center mb-3 shadow-md hover:shadow-lg transition-all overflow-hidden`}
                 >
                   {hasUploadedIcon ? (
                     <img
