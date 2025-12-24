@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 export default function TermsConditions() {
   useEffect(() => {
-    const title = "Terms & Conditions | Ashish Property";
+    const title = "Terms & Conditions | Ashish Properties";
     const desc =
       "Terms of using Ashish Property’s website and services. Read service scope, pricing, liability and dispute policy.";
     document.title = title;
