@@ -104,6 +104,7 @@ import BlogDetail from "./pages/BlogDetail";
 import Listings from "./pages/Listings";
 
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import NotificationPermissionPrompt from "./components/NotificationPermissionPrompt";
 
 
 
