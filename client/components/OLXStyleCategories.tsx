@@ -175,13 +175,13 @@ function OLXStyleCategories() {
   /* ---------- Loading skeleton ---------- */
   if (loading) {
     return (
-      <div className="bg-white">
-        <div className="px-4 pb-6 pt-6">
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+      <div className="bg-gradient-to-b from-white to-gray-50">
+        <div className="px-4 pb-8 pt-6">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center">
-                <div className="w-14 h-14 bg-gray-200 rounded-lg animate-pulse mb-2" />
-                <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-16 h-16 bg-gray-200 rounded-2xl animate-pulse mb-3" />
+                <div className="w-14 h-3 bg-gray-200 rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -192,73 +192,81 @@ function OLXStyleCategories() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="bg-white py-6 md:py-8 lg:py-10">
-      <div className="px-4">
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8">
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-5 md:gap-6">
-            {(categories || []).map((category, index) => {
-              if (!category?.name) return null;
+    <div className="bg-gradient-to-b from-white to-gray-50 py-8 md:py-10 lg:py-12">
+      <div className="px-4 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
+          <p className="text-sm text-gray-600 mt-1">Browse our selection</p>
+        </div>
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+          {(categories || []).map((category, index) => {
+            if (!category?.name) return null;
 
-              const isActive = activeCat?.slug === category.slug;
+            const isActive = activeCat?.slug === category.slug;
 
-              const isSell =
-                norm(category.slug) === "sell" ||
-                norm(category.name) === "sell";
+            const isSell =
+              norm(category.slug) === "sell" ||
+              norm(category.name) === "sell";
 
-              // Use uploaded icon from API, fallback to Lucide icons
-              const hasUploadedIcon = category.icon && category.icon.trim();
-              const IconComponent = hasUploadedIcon
-                ? null
-                : categoryIcons[category.name] || Building2;
+            // Use uploaded icon from API, fallback to Lucide icons
+            const hasUploadedIcon = category.icon && category.icon.trim();
+            const IconComponent = hasUploadedIcon
+              ? null
+              : categoryIcons[category.name] || Building2;
 
-              return (
+            return (
+              <div
+                key={category._id || category.slug || index}
+                onClick={() => {
+                  setActiveCat(category);
+                  if (isSell) {
+                    handleSellClick();
+                  } else {
+                    handleCategoryClick(category);
+                  }
+                }}
+                className={`flex flex-col items-center cursor-pointer transition-all duration-300 active:scale-95 group ${
+                  isActive ? "scale-105" : "hover:scale-105"
+                }`}
+              >
                 <div
-                  key={category._id || category.slug || index}
-                  onClick={() => {
-                    setActiveCat(category);
-                    if (isSell) {
-                      handleSellClick();
-                    } else {
-                      handleCategoryClick(category);
-                    }
-                  }}
-                  className={`flex flex-col items-center cursor-pointer active:scale-95 transition-transform ${
-                    isActive ? "opacity-100" : "opacity-90"
+                  className={`w-16 h-16 md:w-20 md:h-20 flex items-center justify-center mb-3 rounded-2xl transition-all duration-300 border-2 overflow-hidden shadow-sm group-hover:shadow-md ${
+                    isActive
+                      ? "bg-red-600 border-red-700 shadow-lg"
+                      : "bg-white border-red-200 group-hover:border-red-400"
                   }`}
                 >
-                  <div
-                    className={`w-14 h-14 ${
-                      isActive ? "bg-pink-100" : "bg-pink-50"
-                    } border border-pink-100 rounded-lg flex items-center justify-center mb-2 hover:bg-pink-100 transition-colors overflow-hidden`}
-                  >
-                    {hasUploadedIcon ? (
-                      <img
-                        src={category.icon}
-                        alt={category.name}
-                        className="w-full h-full object-contain p-1"
-                        style={{
-                          filter:
-                            "hue-rotate(320deg) saturate(1.2) brightness(0.9)",
-                        }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
+                  {hasUploadedIcon ? (
+                    <img
+                      src={category.icon}
+                      alt={category.name}
+                      className={`w-full h-full object-contain p-2 ${
+                        isActive ? "brightness-0 invert" : ""
+                      }`}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    IconComponent && (
+                      <IconComponent
+                        className={`h-8 w-8 md:h-10 md:w-10 transition-colors ${
+                          isActive ? "text-white" : "text-red-600"
+                        }`}
                       />
-                    ) : (
-                      IconComponent && (
-                        <IconComponent className="h-7 w-7 text-[#C2185B]" />
-                      )
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-800 text-center font-medium leading-tight">
-                    {category.name.length > 12
-                      ? `${category.name.substring(0, 12)}...`
-                      : category.name}
-                  </span>
+                    )
+                  )}
                 </div>
-              );
-            })}
-          </div>
+                <span
+                  className={`text-xs md:text-sm text-center font-semibold leading-tight line-clamp-2 transition-colors ${
+                    isActive ? "text-red-700" : "text-gray-900 group-hover:text-red-600"
+                  }`}
+                >
+                  {category.name}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
