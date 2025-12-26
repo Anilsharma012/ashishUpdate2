@@ -334,28 +334,26 @@ export default function CategoryPage(props: {
 
           {view === "mini" && selectedSub && (
             <>
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-8 pb-6">
                 <button
                   onClick={backToSubs}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black"
+                  className="inline-flex items-center gap-2 text-base font-semibold text-red-600 hover:text-red-700 mb-4 transition-colors"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   Back
                 </button>
-              </div>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                   {selectedSub.name}
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  Select a mini-category
+                </h1>
+                <p className="text-gray-600 text-base mb-4">
+                  Select a subcategory
                 </p>
 
                 <button
                   type="button"
                   onClick={() => goToListings(selectedSub.slug)}
-                  className="mt-3 inline-flex items-center justify-center rounded-md border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-red-600 bg-red-600 text-white px-6 py-3 text-base font-semibold hover:bg-red-700 hover:border-red-700 transition-all active:scale-95"
                 >
                   View all {selectedSub.name}
                 </button>
