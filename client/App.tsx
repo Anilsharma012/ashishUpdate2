@@ -106,8 +106,6 @@ import Listings from "./pages/Listings";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import NotificationPermissionPrompt from "./components/NotificationPermissionPrompt";
 
-
-
 // �� NEW: homepage-only logo bar
 import HomeTopBar from "@/components/HomeTopBar";
 

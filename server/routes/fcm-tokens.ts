@@ -28,7 +28,7 @@ export const saveFcmToken: RequestHandler = async (req, res) => {
           createdAt: new Date(),
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     await db.collection("users").updateOne(
@@ -36,7 +36,7 @@ export const saveFcmToken: RequestHandler = async (req, res) => {
       {
         $addToSet: { fcmTokens: token },
         $set: { lastFcmTokenUpdate: new Date() },
-      }
+      },
     );
 
     console.log(`📱 FCM token saved for user ${userId}`);
@@ -72,10 +72,12 @@ export const removeFcmToken: RequestHandler = async (req, res) => {
       token,
     });
 
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(userId) },
-      { $pull: { fcmTokens: token } as any }
-    );
+    await db
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(userId) },
+        { $pull: { fcmTokens: token } as any },
+      );
 
     console.log(`📱 FCM token removed for user ${userId}`);
 
@@ -111,7 +113,17 @@ export const getFcmTokenStatus: RequestHandler = async (req, res) => {
     const userIdObj = new ObjectId(userId);
     const user = await db
       .collection("users")
-      .findOne({ _id: userIdObj }, { projection: { name: 1, email: 1, fcmTokens: 1, lastFcmTokenUpdate: 1 } });
+      .findOne(
+        { _id: userIdObj },
+        {
+          projection: {
+            name: 1,
+            email: 1,
+            fcmTokens: 1,
+            lastFcmTokenUpdate: 1,
+          },
+        },
+      );
 
     if (!user) {
       return res.status(404).json({
@@ -132,18 +144,18 @@ export const getFcmTokenStatus: RequestHandler = async (req, res) => {
         userName: user.name || "Unknown",
         email: user.email,
         fcmTokensCount: (user.fcmTokens || []).length,
-        fcmTokens: (user.fcmTokens || []).map(t => ({
+        fcmTokens: (user.fcmTokens || []).map((t) => ({
           token: t.substring(0, 20) + "...", // Masked for security
-          fullToken: t // Store full token for verification
+          fullToken: t, // Store full token for verification
         })),
-        tokenDetails: tokens.map(t => ({
+        tokenDetails: tokens.map((t) => ({
           createdAt: t.createdAt,
           updatedAt: t.updatedAt,
-          deviceInfo: t.deviceInfo || {}
+          deviceInfo: t.deviceInfo || {},
         })),
         lastUpdated: user.lastFcmTokenUpdate || "Never",
-        status: (user.fcmTokens || []).length > 0 ? "✅ Ready" : "⚠️ No tokens"
-      }
+        status: (user.fcmTokens || []).length > 0 ? "✅ Ready" : "⚠️ No tokens",
+      },
     });
   } catch (error) {
     console.error("Error fetching FCM token status:", error);

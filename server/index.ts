@@ -483,7 +483,11 @@ import {
 } from "./routes/notifications";
 import { getUnreadNotificationsCount } from "./routes/notifications-unread";
 import { subscribeToTopic } from "./routes/notifications-subscribe";
-import { saveFcmToken, removeFcmToken, getFcmTokenStatus } from "./routes/fcm-tokens";
+import {
+  saveFcmToken,
+  removeFcmToken,
+  getFcmTokenStatus,
+} from "./routes/fcm-tokens";
 import { requestEmailOtp, verifyEmailOtp } from "./routes/email-otp";
 
 // Homepage slider routes
@@ -911,7 +915,7 @@ export function createServer() {
 
   // FCM topic subscribe (optional, requires Firebase admin env)
   app.post("/api/notifications/subscribe", subscribeToTopic);
-  
+
   // FCM token management (for push notifications)
   app.post("/api/fcm/token", authenticateToken, saveFcmToken);
   app.delete("/api/fcm/token", authenticateToken, removeFcmToken);

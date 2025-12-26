@@ -237,7 +237,8 @@ function OLXStyleCategories() {
                         alt={category.name}
                         className="w-full h-full object-contain p-1"
                         style={{
-                          filter: "hue-rotate(320deg) saturate(1.2) brightness(0.9)",
+                          filter:
+                            "hue-rotate(320deg) saturate(1.2) brightness(0.9)",
                         }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
