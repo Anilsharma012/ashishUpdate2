@@ -139,6 +139,8 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
             setToken(idToken);
             localStorage.setItem("token", idToken);
             localStorage.setItem("user", JSON.stringify(userData));
+            // Save FCM token when auth state is confirmed
+            saveFcmTokenToServer(idToken).catch(e => console.warn("FCM token save failed:", e));
           } else {
             console.log(
               "No user profile found (new user or offline without cache)",
