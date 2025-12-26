@@ -512,9 +512,11 @@ export default function AdminLayout({
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           {!sidebarCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#C70000] rounded flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
-              </div>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fe9763bd375964398a19886f3a1032e2d%2Fe58e46877fb24231a73478cc9d28f6d7?format=webp&width=800"
+                alt="Admin Logo"
+                className="w-8 h-8"
+              />
               <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
             </div>
           )}
@@ -544,11 +546,11 @@ export default function AdminLayout({
         {!sidebarCollapsed && (
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#C70000] rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold">
-                  {user?.name?.charAt(0) || "A"}
-                </span>
-              </div>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fe9763bd375964398a19886f3a1032e2d%2Fe58e46877fb24231a73478cc9d28f6d7?format=webp&width=800"
+                alt="Admin Logo"
+                className="w-10 h-10"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.name || "Admin User"}
@@ -600,11 +602,11 @@ export default function AdminLayout({
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="outline">Admin</Badge>
-              <div className="w-8 h-8 bg-[#C70000] rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">
-                  {user?.name?.charAt(0) || "A"}
-                </span>
-              </div>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fe9763bd375964398a19886f3a1032e2d%2Fe58e46877fb24231a73478cc9d28f6d7?format=webp&width=800"
+                alt="Admin Logo"
+                className="w-8 h-8"
+              />
             </div>
           </div>
         </header>
