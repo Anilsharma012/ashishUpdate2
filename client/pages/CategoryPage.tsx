@@ -360,42 +360,47 @@ export default function CategoryPage(props: {
               {miniLoading ? (
                 <div className="flex items-center justify-center py-10">
                   <div className="text-center">
-                    <div className="animate-spin w-7 h-7 border-2 border-[#C70000] border-t-transparent rounded-full mx-auto mb-3" />
+                    <div className="animate-spin w-7 h-7 border-2 border-red-600 border-t-transparent rounded-full mx-auto mb-3" />
                     <p className="text-gray-600 text-sm">Loading mini-categories...</p>
                   </div>
                 </div>
               ) : visibleMinis.length ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {visibleMinis.map((mini) => (
                     <button
                       key={mini._id || mini.id || mini.slug}
                       onClick={() => openMini(mini)}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 text-base">
-                          {mini.name}
-                        </h3>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <div className="relative p-5 text-left">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                            {mini.name}
+                          </h3>
+                          <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                        </div>
+
+                        {mini.description ? (
+                          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                            {mini.description}
+                          </p>
+                        ) : null}
+
+                        {typeof mini.count === "number" && mini.count > 0 ? (
+                          <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                            {mini.count} properties
+                          </span>
+                        ) : null}
                       </div>
-
-                      {mini.description ? (
-                        <p className="text-sm text-gray-500 mb-3">
-                          {mini.description}
-                        </p>
-                      ) : null}
-
-                      {typeof mini.count === "number" && mini.count > 0 ? (
-                        <span className="text-xs bg-[#C70000] text-white px-2 py-1 rounded-full font-medium">
-                          {mini.count} properties
-                        </span>
-                      ) : null}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700">
-                  No mini-categories found here. You can still view listings.
+                <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 font-medium">No mini-categories found here</p>
+                  <p className="text-sm text-gray-600 mt-1">You can still view all listings in this category</p>
                 </div>
               )}
             </>
