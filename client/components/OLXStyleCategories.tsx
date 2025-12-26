@@ -235,14 +235,17 @@ function OLXStyleCategories() {
                       <img
                         src={category.icon}
                         alt={category.name}
-                        className="w-full h-full object-contain p-1"
+                        className="w-full h-full object-contain p-1 invert-colors"
+                        style={{
+                          filter: "brightness(0) saturate(100%) invert(20%) sepia(71%) saturate(1424%) hue-rotate(314deg) brightness(96%) contrast(90%)",
+                        }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     ) : (
                       IconComponent && (
-                        <IconComponent className="h-7 w-7 text-[#C70000]" />
+                        <IconComponent className="h-7 w-7 text-[#C2185B]" />
                       )
                     )}
                   </div>
