@@ -161,27 +161,27 @@ export default function Agricultural() {
       <OLXStyleHeader />
       <CategoryBar />
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Agricultural</h1>
-            <p className="text-gray-600 mt-1">
-              Browse agricultural listings by category
-            </p>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-8 pb-6 border-b-2 border-red-200">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Agricultural
+          </h1>
+          <p className="text-gray-600 text-base">
+            Browse agricultural listings by category
+          </p>
         </div>
 
         {/* Subcategories chips */}
         {subcategories.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-8">
             {subcategories.map((sub) => (
               <button
                 key={sub._id || sub.id || sub.slug}
                 onClick={() => handleSubcategoryClick(sub.slug)}
-                className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all duration-300 ${
                   currentSubcategorySlug === sub.slug
                     ? "bg-red-600 text-white border-red-600"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    : "bg-white text-gray-700 border-red-200 hover:border-red-400 hover:bg-red-50"
                 }`}
               >
                 {sub.name}
@@ -195,38 +195,41 @@ export default function Agricultural() {
             <Loader2 className="w-8 h-8 animate-spin text-red-600" />
           </div>
         ) : miniSubcategories.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {miniSubcategories.map((mini) => (
-              <div
+              <button
                 key={mini._id || mini.id || mini.slug}
                 onClick={() => handleMiniClick(mini)}
-                className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400 text-left"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="relative p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
                       {mini.name}
                     </h3>
-                    {mini.description && (
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {mini.description}
-                      </p>
-                    )}
+                    <ChevronRight className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
 
-                {typeof mini.count === "number" && (
-                  <div className="mt-3 text-sm text-gray-700">
-                    <span className="font-semibold">{mini.count}</span>{" "}
-                    {mini.count === 1 ? "property" : "properties"}
-                  </div>
-                )}
-              </div>
+                  {mini.description && (
+                    <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2">
+                      {mini.description}
+                    </p>
+                  )}
+
+                  {typeof mini.count === "number" && mini.count > 0 && (
+                    <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                      {mini.count}{" "}
+                      {mini.count === 1 ? "property" : "properties"}
+                    </span>
+                  )}
+                </div>
+              </button>
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
+          <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-8 text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               No Listings Found
             </h2>

@@ -56,14 +56,19 @@ async function apiGet(path: string) {
   const res = await fetch(`/api${path}`, {
     headers: { "Content-Type": "application/json" },
   });
-  return { ok: res.ok, status: res.status, json: await res.json().catch(() => null) };
+  return {
+    ok: res.ok,
+    status: res.status,
+    json: await res.json().catch(() => null),
+  };
 }
 
 export default function Buy() {
   const navigate = useNavigate();
 
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<Subcategory | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fallbackSubcategories: Subcategory[] = useMemo(
@@ -132,8 +137,12 @@ export default function Buy() {
       if ((res?.ok || res?.status === 200) && json?.success) {
         const d = json?.data;
         if (Array.isArray(d)) {
-          const found = d.find((c: any) => safeKebab(c?.slug ?? c?.name) === "buy");
-          rawSubs = Array.isArray(found?.subcategories) ? found.subcategories : [];
+          const found = d.find(
+            (c: any) => safeKebab(c?.slug ?? c?.name) === "buy",
+          );
+          rawSubs = Array.isArray(found?.subcategories)
+            ? found.subcategories
+            : [];
         } else if (Array.isArray(d?.category?.subcategories)) {
           rawSubs = d.category.subcategories;
         } else if (Array.isArray(d?.subcategories)) {
@@ -177,7 +186,9 @@ export default function Buy() {
 
   useEffect(() => {
     if (!selectedSubcategory) return;
-    const stillExists = subcategories.some((s) => s.slug === selectedSubcategory.slug);
+    const stillExists = subcategories.some(
+      (s) => s.slug === selectedSubcategory.slug,
+    );
     if (!stillExists) setSelectedSubcategory(null);
   }, [subcategories, selectedSubcategory]);
 
@@ -230,91 +241,130 @@ export default function Buy() {
       <main className="pl-16">
         <CategoryBar />
 
-        <div className="px-4 py-6">
+        <div className="px-4 py-8">
           {!selectedSubcategory ? (
             <>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">Buy Properties</h1>
-                <p className="text-gray-600">Choose what you want to buy</p>
+              <div className="mb-8 pb-6 border-b-2 border-red-200">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  Buy Properties
+                </h1>
+                <p className="text-gray-600 text-base">
+                  Choose what you want to buy
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                 {(subcategories || []).map((subcategory) => (
                   <button
                     key={subcategory._id || subcategory.id || subcategory.slug}
                     onClick={() => handleSubcategoryClick(subcategory)}
-                    className="subcat-card bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm"
+                    className="subcat-card group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     data-testid="subcat-card"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900 text-lg">{subcategory.name}</h3>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <div className="relative p-5 text-left">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-bold text-gray-900 text-base md:text-lg leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                          {subcategory.name}
+                        </h3>
+                        <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                      </div>
+
+                      {subcategory.description && (
+                        <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2">
+                          {subcategory.description}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap gap-2">
+                        {Array.isArray(subcategory.miniSubcategories) &&
+                        subcategory.miniSubcategories.length > 0 ? (
+                          <span className="inline-block text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">
+                            {subcategory.miniSubcategories.length} options
+                          </span>
+                        ) : null}
+
+                        {subcategory.count ? (
+                          <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                            {subcategory.count} properties
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-500 mb-3">{subcategory.description || ""}</p>
-
-                    {Array.isArray(subcategory.miniSubcategories) && subcategory.miniSubcategories.length > 0 ? (
-                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                        {subcategory.miniSubcategories.length} options
-                      </span>
-                    ) : null}
-
-                    {subcategory.count ? (
-                      <span className="ml-2 text-xs bg-[#C70000] text-white px-2 py-1 rounded-full">
-                        {subcategory.count} properties
-                      </span>
-                    ) : null}
                   </button>
                 ))}
               </div>
             </>
           ) : (
             <>
-              <div className="mb-6">
+              <div className="mb-8 pb-6">
                 <button
                   type="button"
                   onClick={() => setSelectedSubcategory(null)}
-                  className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 mb-4"
+                  className="inline-flex items-center gap-2 text-base font-semibold text-red-600 hover:text-red-700 mb-4 transition-colors"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   Back
                 </button>
 
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">{selectedSubcategory.name}</h1>
-                <p className="text-gray-600">Select a sub-category</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  {selectedSubcategory.name}
+                </h1>
+                <p className="text-gray-600 text-base mb-4">
+                  Select a subcategory
+                </p>
 
                 <button
                   type="button"
                   onClick={() => goToListings(selectedSubcategory.slug)}
-                  className="mt-3 inline-flex items-center justify-center rounded-md border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-red-600 bg-red-600 text-white px-6 py-3 text-base font-semibold hover:bg-red-700 hover:border-red-700 transition-all active:scale-95"
                 >
                   View all {selectedSubcategory.name}
                 </button>
               </div>
 
               {visibleMinis.length ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                   {visibleMinis.map((mini) => (
                     <button
                       key={mini._id || mini.id || mini.slug}
                       onClick={() => handleMiniClick(mini)}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm"
+                      className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 text-base">{mini.name}</h3>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <div className="relative p-5 text-left">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                            {mini.name}
+                          </h3>
+                          <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                        </div>
+
+                        {mini.description && (
+                          <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2">
+                            {mini.description}
+                          </p>
+                        )}
+
+                        {mini.count ? (
+                          <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                            {mini.count} properties
+                          </span>
+                        ) : null}
                       </div>
-                      <p className="text-sm text-gray-500">{mini.description || ""}</p>
-                      {mini.count ? (
-                        <span className="mt-2 inline-block text-xs bg-[#C70000] text-white px-2 py-1 rounded-full">
-                          {mini.count} properties
-                        </span>
-                      ) : null}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700">
-                  No mini-categories found here. You can still view listings.
+                <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 font-medium">
+                    No subcategories found here
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can still view all listings in this category
+                  </p>
                 </div>
               )}
             </>

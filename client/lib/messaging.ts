@@ -10,9 +10,7 @@ import app from "./firebase";
  * VAPID key (from .env)
  * VITE_FIREBASE_VAPID_KEY=xxxxxxxx
  */
-const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as
-  | string
-  | undefined;
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined;
 
 let messaging: Messaging | null = null;
 
@@ -33,9 +31,7 @@ export function initMessaging() {
 /* -------------------------------------------------------
    Push Permission (NON-BLOCKING)
 ------------------------------------------------------- */
-export async function ensurePushPermission(): Promise<
-  NotificationPermission | null
-> {
+export async function ensurePushPermission(): Promise<NotificationPermission | null> {
   if (typeof window === "undefined") return null;
   if (!("Notification" in window)) return null;
 
@@ -104,11 +100,36 @@ export function listenForegroundNotifications() {
 
       const title = payload.notification?.title || "Notification";
       const body = payload.notification?.body || "";
+      const icon = payload.notification?.icon || "/favicon.ico";
+      const tag =
+        payload.notification?.tag || payload.data?.tag || "notification";
+      const url = payload.data?.url || payload.data?.click_action || "/";
 
-      new Notification(title, {
-        body,
-        icon: payload.notification?.icon || "/favicon.ico",
-      });
+      // Show notification with system tray support
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, {
+            body,
+            icon,
+            badge: "/favicon.ico",
+            tag,
+            renotify: true,
+            vibrate: [100, 50, 100],
+            data: { url },
+            requireInteraction: false,
+          });
+        });
+      } else {
+        // Fallback to simple Notification API
+        new Notification(title, {
+          body,
+          icon,
+          badge: "/favicon.ico",
+          tag,
+          renotify: true,
+          vibrate: [100, 50, 100],
+        });
+      }
     } catch (err) {
       console.warn("Foreground notification error:", err);
     }

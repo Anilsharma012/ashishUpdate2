@@ -71,7 +71,8 @@ export default function CategoryPage(props: {
 }) {
   const navigate = useNavigate();
 
-  const { categoryName, categorySlug, categoryIcon, categoryDescription } = props;
+  const { categoryName, categorySlug, categoryIcon, categoryDescription } =
+    props;
 
   const [loading, setLoading] = useState(true);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -109,7 +110,9 @@ export default function CategoryPage(props: {
     active: sub?.active,
     count: sub?.count ?? 0,
     miniSubcategories: Array.isArray(sub?.miniSubcategories)
-      ? sub.miniSubcategories.map(normalizeMini).filter((m: any) => m?.slug && isActive(m))
+      ? sub.miniSubcategories
+          .map(normalizeMini)
+          .filter((m: any) => m?.slug && isActive(m))
       : [],
   });
 
@@ -139,22 +142,29 @@ export default function CategoryPage(props: {
         // sometimes returns array of categories
         if (!rawSubs.length && Array.isArray(d)) {
           const found = d.find(
-            (c: any) => safeKebab(c?.slug ?? c?.name) === normalizedCategorySlug,
+            (c: any) =>
+              safeKebab(c?.slug ?? c?.name) === normalizedCategorySlug,
           );
-          rawSubs = Array.isArray(found?.subcategories) ? found.subcategories : [];
+          rawSubs = Array.isArray(found?.subcategories)
+            ? found.subcategories
+            : [];
         }
       }
 
       // ✅ 2) Fallback: /api/categories/:slug
       if (!rawSubs.length) {
-        const res2 = await fetch(createApiUrl(`categories/${normalizedCategorySlug}`), {
-          headers: { "Content-Type": "application/json" },
-        });
+        const res2 = await fetch(
+          createApiUrl(`categories/${normalizedCategorySlug}`),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        );
         const json2 = await safeJson<CategoryResponse>(res2);
         if (res2.ok && json2?.success) {
           const d = json2?.data;
           if (Array.isArray(d?.subcategories)) rawSubs = d.subcategories;
-          if (!rawSubs.length && Array.isArray(d?.category?.subcategories)) rawSubs = d.category.subcategories;
+          if (!rawSubs.length && Array.isArray(d?.category?.subcategories))
+            rawSubs = d.category.subcategories;
         }
       }
 
@@ -264,58 +274,73 @@ export default function CategoryPage(props: {
           <CategoryBar />
         </div>
 
-        <div className="px-4 py-6">
+        <div className="px-4 py-8">
           {view === "sub" && (
             <>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                  <span>{categoryIcon ?? "📁"}</span>
-                  <span>{categoryName}</span>
-                </h1>
-                <p className="text-gray-600">
-                  {categoryDescription ?? "Choose a subcategory"}
-                </p>
+              <div className="mb-8 pb-6 border-b-2 border-red-200">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="text-4xl">{categoryIcon ?? "📁"}</span>
+                  <div className="flex-1">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                      {categoryName}
+                    </h1>
+                    <p className="text-gray-600 text-base">
+                      {categoryDescription ?? "Choose a subcategory"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {subcategories.length ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                   {subcategories.map((sub) => (
                     <button
                       key={sub._id || sub.id || sub.slug}
                       onClick={() => openSub(sub)}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 text-lg">
-                          {sub.name}
-                        </h3>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <div className="relative p-5 text-left">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                            {sub.name}
+                          </h3>
+                          <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                        </div>
+
+                        {sub.description ? (
+                          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                            {sub.description}
+                          </p>
+                        ) : null}
+
+                        <div className="flex flex-wrap gap-2">
+                          {Array.isArray(sub.miniSubcategories) &&
+                          sub.miniSubcategories.length > 0 ? (
+                            <span className="inline-block text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">
+                              {sub.miniSubcategories.length} options
+                            </span>
+                          ) : null}
+
+                          {typeof sub.count === "number" && sub.count > 0 ? (
+                            <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                              {sub.count} properties
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
-
-                      {sub.description ? (
-                        <p className="text-sm text-gray-500 mb-3">
-                          {sub.description}
-                        </p>
-                      ) : null}
-
-                      {Array.isArray(sub.miniSubcategories) &&
-                      sub.miniSubcategories.length > 0 ? (
-                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                          {sub.miniSubcategories.length} options
-                        </span>
-                      ) : null}
-
-                      {typeof sub.count === "number" && sub.count > 0 ? (
-                        <span className="ml-2 text-xs bg-[#C70000] text-white px-2 py-1 rounded-full font-medium">
-                          {sub.count} properties
-                        </span>
-                      ) : null}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700">
-                  No subcategories found. (Admin se add karke check karo)
+                <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 font-medium">
+                    No subcategories found
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Please contact admin to add categories
+                  </p>
                 </div>
               )}
             </>
@@ -323,28 +348,26 @@ export default function CategoryPage(props: {
 
           {view === "mini" && selectedSub && (
             <>
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-8 pb-6">
                 <button
                   onClick={backToSubs}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black"
+                  className="inline-flex items-center gap-2 text-base font-semibold text-red-600 hover:text-red-700 mb-4 transition-colors"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   Back
                 </button>
-              </div>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                   {selectedSub.name}
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  Select a mini-category
+                </h1>
+                <p className="text-gray-600 text-base mb-4">
+                  Select a subcategory
                 </p>
 
                 <button
                   type="button"
                   onClick={() => goToListings(selectedSub.slug)}
-                  className="mt-3 inline-flex items-center justify-center rounded-md border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-red-600 bg-red-600 text-white px-6 py-3 text-base font-semibold hover:bg-red-700 hover:border-red-700 transition-all active:scale-95"
                 >
                   View all {selectedSub.name}
                 </button>
@@ -353,42 +376,53 @@ export default function CategoryPage(props: {
               {miniLoading ? (
                 <div className="flex items-center justify-center py-10">
                   <div className="text-center">
-                    <div className="animate-spin w-7 h-7 border-2 border-[#C70000] border-t-transparent rounded-full mx-auto mb-3" />
-                    <p className="text-gray-600 text-sm">Loading mini-categories...</p>
+                    <div className="animate-spin w-7 h-7 border-2 border-red-600 border-t-transparent rounded-full mx-auto mb-3" />
+                    <p className="text-gray-600 text-sm">
+                      Loading mini-categories...
+                    </p>
                   </div>
                 </div>
               ) : visibleMinis.length ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                   {visibleMinis.map((mini) => (
                     <button
                       key={mini._id || mini.id || mini.slug}
                       onClick={() => openMini(mini)}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 text-base">
-                          {mini.name}
-                        </h3>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <div className="relative p-5 text-left">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                            {mini.name}
+                          </h3>
+                          <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                        </div>
+
+                        {mini.description ? (
+                          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                            {mini.description}
+                          </p>
+                        ) : null}
+
+                        {typeof mini.count === "number" && mini.count > 0 ? (
+                          <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                            {mini.count} properties
+                          </span>
+                        ) : null}
                       </div>
-
-                      {mini.description ? (
-                        <p className="text-sm text-gray-500 mb-3">
-                          {mini.description}
-                        </p>
-                      ) : null}
-
-                      {typeof mini.count === "number" && mini.count > 0 ? (
-                        <span className="text-xs bg-[#C70000] text-white px-2 py-1 rounded-full font-medium">
-                          {mini.count} properties
-                        </span>
-                      ) : null}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700">
-                  No mini-categories found here. You can still view listings.
+                <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 font-medium">
+                    No mini-categories found here
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can still view all listings in this category
+                  </p>
                 </div>
               )}
             </>
