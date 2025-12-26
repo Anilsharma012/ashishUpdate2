@@ -483,7 +483,7 @@ import {
 } from "./routes/notifications";
 import { getUnreadNotificationsCount } from "./routes/notifications-unread";
 import { subscribeToTopic } from "./routes/notifications-subscribe";
-import { saveFcmToken, removeFcmToken } from "./routes/fcm-tokens";
+import { saveFcmToken, removeFcmToken, getFcmTokenStatus } from "./routes/fcm-tokens";
 import { requestEmailOtp, verifyEmailOtp } from "./routes/email-otp";
 
 // Homepage slider routes
