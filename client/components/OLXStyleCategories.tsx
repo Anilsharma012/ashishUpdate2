@@ -228,21 +228,25 @@ function OLXStyleCategories() {
                 >
                   <div
                     className={`w-14 h-14 ${
-                      isActive ? "bg-red-100" : "bg-red-50"
-                    } border border-red-100 rounded-lg flex items-center justify-center mb-2 hover:bg-red-100 transition-colors overflow-hidden`}
+                      isActive ? "bg-pink-100" : "bg-pink-50"
+                    } border border-pink-100 rounded-lg flex items-center justify-center mb-2 hover:bg-pink-100 transition-colors overflow-hidden`}
                   >
                     {hasUploadedIcon ? (
                       <img
                         src={category.icon}
                         alt={category.name}
                         className="w-full h-full object-contain p-1"
+                        style={{
+                          filter:
+                            "hue-rotate(320deg) saturate(1.2) brightness(0.9)",
+                        }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     ) : (
                       IconComponent && (
-                        <IconComponent className="h-7 w-7 text-[#C70000]" />
+                        <IconComponent className="h-7 w-7 text-[#C2185B]" />
                       )
                     )}
                   </div>

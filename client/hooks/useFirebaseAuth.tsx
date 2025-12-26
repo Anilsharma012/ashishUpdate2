@@ -8,7 +8,11 @@ import {
 import { User as FirebaseUser } from "firebase/auth";
 import { doc, setDoc, getDoc, getDocFromCache } from "firebase/firestore";
 import { auth, db, onAuthStateChange, signOutUser } from "../lib/firebase";
-import { getFcmToken, ensurePushPermission, listenForegroundNotifications } from "../lib/messaging";
+import {
+  getFcmToken,
+  ensurePushPermission,
+  listenForegroundNotifications,
+} from "../lib/messaging";
 
 interface User {
   id: string;
@@ -139,6 +143,10 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
             setToken(idToken);
             localStorage.setItem("token", idToken);
             localStorage.setItem("user", JSON.stringify(userData));
+            // Save FCM token when auth state is confirmed
+            saveFcmTokenToServer(idToken).catch((e) =>
+              console.warn("FCM token save failed:", e),
+            );
           } else {
             console.log(
               "No user profile found (new user or offline without cache)",

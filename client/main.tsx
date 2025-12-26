@@ -36,11 +36,24 @@ function bootstrapApp() {
 
   if ("serviceWorker" in navigator) {
     setTimeout(async () => {
-      await ensurePushPermissionNonBlocking();
-      const token = await getFcmToken();
-      if (token) {
-        subscribeTokenToGeneralTopic(token);
-        listenForegroundNotifications();
+      try {
+        const permission = await ensurePushPermissionNonBlocking();
+        console.log("📱 Notification permission:", permission);
+
+        if (permission === "granted") {
+          const token = await getFcmToken();
+          if (token) {
+            console.log("✅ FCM token obtained, subscribing to notifications");
+            subscribeTokenToGeneralTopic(token);
+            listenForegroundNotifications();
+          } else {
+            console.warn("⚠️ Failed to get FCM token");
+          }
+        } else {
+          console.log("⚠️ Notification permission not granted:", permission);
+        }
+      } catch (error) {
+        console.error("Error initializing push notifications:", error);
       }
     }, 1500);
   }
