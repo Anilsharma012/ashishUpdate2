@@ -104,11 +104,35 @@ export function listenForegroundNotifications() {
 
       const title = payload.notification?.title || "Notification";
       const body = payload.notification?.body || "";
+      const icon = payload.notification?.icon || "/favicon.ico";
+      const tag = payload.notification?.tag || payload.data?.tag || "notification";
+      const url = payload.data?.url || payload.data?.click_action || "/";
 
-      new Notification(title, {
-        body,
-        icon: payload.notification?.icon || "/favicon.ico",
-      });
+      // Show notification with system tray support
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, {
+            body,
+            icon,
+            badge: "/favicon.ico",
+            tag,
+            renotify: true,
+            vibrate: [100, 50, 100],
+            data: { url },
+            requireInteraction: false,
+          });
+        });
+      } else {
+        // Fallback to simple Notification API
+        new Notification(title, {
+          body,
+          icon,
+          badge: "/favicon.ico",
+          tag,
+          renotify: true,
+          vibrate: [100, 50, 100],
+        });
+      }
     } catch (err) {
       console.warn("Foreground notification error:", err);
     }
