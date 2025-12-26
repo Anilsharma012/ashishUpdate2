@@ -367,7 +367,7 @@ export default function CategoryPage(props: {
                   </div>
                 </div>
               ) : visibleMinis.length ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                   {visibleMinis.map((mini) => (
                     <button
                       key={mini._id || mini.id || mini.slug}
