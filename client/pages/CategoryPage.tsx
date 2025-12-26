@@ -264,17 +264,21 @@ export default function CategoryPage(props: {
           <CategoryBar />
         </div>
 
-        <div className="px-4 py-6">
+        <div className="px-4 py-8">
           {view === "sub" && (
             <>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                  <span>{categoryIcon ?? "📁"}</span>
-                  <span>{categoryName}</span>
-                </h1>
-                <p className="text-gray-600">
-                  {categoryDescription ?? "Choose a subcategory"}
-                </p>
+              <div className="mb-8 pb-6 border-b-2 border-red-200">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="text-4xl">{categoryIcon ?? "📁"}</span>
+                  <div className="flex-1">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                      {categoryName}
+                    </h1>
+                    <p className="text-gray-600 text-base">
+                      {categoryDescription ?? "Choose a subcategory"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {subcategories.length ? (
