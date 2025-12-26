@@ -915,7 +915,8 @@ export function createServer() {
   // FCM token management (for push notifications)
   app.post("/api/fcm/token", authenticateToken, saveFcmToken);
   app.delete("/api/fcm/token", authenticateToken, removeFcmToken);
-  
+  app.get("/api/fcm/status/:userId", requireAdmin, getFcmTokenStatus);
+
   app.get(
     "/api/notifications/unread-count",
     authenticateToken,
