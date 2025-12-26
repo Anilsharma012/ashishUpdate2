@@ -71,7 +71,8 @@ export default function CategoryPage(props: {
 }) {
   const navigate = useNavigate();
 
-  const { categoryName, categorySlug, categoryIcon, categoryDescription } = props;
+  const { categoryName, categorySlug, categoryIcon, categoryDescription } =
+    props;
 
   const [loading, setLoading] = useState(true);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -109,7 +110,9 @@ export default function CategoryPage(props: {
     active: sub?.active,
     count: sub?.count ?? 0,
     miniSubcategories: Array.isArray(sub?.miniSubcategories)
-      ? sub.miniSubcategories.map(normalizeMini).filter((m: any) => m?.slug && isActive(m))
+      ? sub.miniSubcategories
+          .map(normalizeMini)
+          .filter((m: any) => m?.slug && isActive(m))
       : [],
   });
 
@@ -139,22 +142,29 @@ export default function CategoryPage(props: {
         // sometimes returns array of categories
         if (!rawSubs.length && Array.isArray(d)) {
           const found = d.find(
-            (c: any) => safeKebab(c?.slug ?? c?.name) === normalizedCategorySlug,
+            (c: any) =>
+              safeKebab(c?.slug ?? c?.name) === normalizedCategorySlug,
           );
-          rawSubs = Array.isArray(found?.subcategories) ? found.subcategories : [];
+          rawSubs = Array.isArray(found?.subcategories)
+            ? found.subcategories
+            : [];
         }
       }
 
       // ✅ 2) Fallback: /api/categories/:slug
       if (!rawSubs.length) {
-        const res2 = await fetch(createApiUrl(`categories/${normalizedCategorySlug}`), {
-          headers: { "Content-Type": "application/json" },
-        });
+        const res2 = await fetch(
+          createApiUrl(`categories/${normalizedCategorySlug}`),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        );
         const json2 = await safeJson<CategoryResponse>(res2);
         if (res2.ok && json2?.success) {
           const d = json2?.data;
           if (Array.isArray(d?.subcategories)) rawSubs = d.subcategories;
-          if (!rawSubs.length && Array.isArray(d?.category?.subcategories)) rawSubs = d.category.subcategories;
+          if (!rawSubs.length && Array.isArray(d?.category?.subcategories))
+            rawSubs = d.category.subcategories;
         }
       }
 
@@ -325,8 +335,12 @@ export default function CategoryPage(props: {
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
-                  <p className="text-gray-700 font-medium">No subcategories found</p>
-                  <p className="text-sm text-gray-600 mt-1">Please contact admin to add categories</p>
+                  <p className="text-gray-700 font-medium">
+                    No subcategories found
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Please contact admin to add categories
+                  </p>
                 </div>
               )}
             </>
@@ -363,7 +377,9 @@ export default function CategoryPage(props: {
                 <div className="flex items-center justify-center py-10">
                   <div className="text-center">
                     <div className="animate-spin w-7 h-7 border-2 border-red-600 border-t-transparent rounded-full mx-auto mb-3" />
-                    <p className="text-gray-600 text-sm">Loading mini-categories...</p>
+                    <p className="text-gray-600 text-sm">
+                      Loading mini-categories...
+                    </p>
                   </div>
                 </div>
               ) : visibleMinis.length ? (
@@ -401,8 +417,12 @@ export default function CategoryPage(props: {
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
-                  <p className="text-gray-700 font-medium">No mini-categories found here</p>
-                  <p className="text-sm text-gray-600 mt-1">You can still view all listings in this category</p>
+                  <p className="text-gray-700 font-medium">
+                    No mini-categories found here
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can still view all listings in this category
+                  </p>
                 </div>
               )}
             </>

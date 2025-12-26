@@ -10,9 +10,7 @@ import app from "./firebase";
  * VAPID key (from .env)
  * VITE_FIREBASE_VAPID_KEY=xxxxxxxx
  */
-const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as
-  | string
-  | undefined;
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined;
 
 let messaging: Messaging | null = null;
 
@@ -33,9 +31,7 @@ export function initMessaging() {
 /* -------------------------------------------------------
    Push Permission (NON-BLOCKING)
 ------------------------------------------------------- */
-export async function ensurePushPermission(): Promise<
-  NotificationPermission | null
-> {
+export async function ensurePushPermission(): Promise<NotificationPermission | null> {
   if (typeof window === "undefined") return null;
   if (!("Notification" in window)) return null;
 
@@ -105,7 +101,8 @@ export function listenForegroundNotifications() {
       const title = payload.notification?.title || "Notification";
       const body = payload.notification?.body || "";
       const icon = payload.notification?.icon || "/favicon.ico";
-      const tag = payload.notification?.tag || payload.data?.tag || "notification";
+      const tag =
+        payload.notification?.tag || payload.data?.tag || "notification";
       const url = payload.data?.url || payload.data?.click_action || "/";
 
       // Show notification with system tray support

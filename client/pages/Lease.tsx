@@ -208,7 +208,9 @@ export default function Lease() {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
               Lease Properties
             </h1>
-            <p className="text-gray-600 text-base">Choose a property type for lease</p>
+            <p className="text-gray-600 text-base">
+              Choose a property type for lease
+            </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">

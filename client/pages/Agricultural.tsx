@@ -163,7 +163,9 @@ export default function Agricultural() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8 pb-6 border-b-2 border-red-200">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Agricultural</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Agricultural
+          </h1>
           <p className="text-gray-600 text-base">
             Browse agricultural listings by category
           </p>
@@ -218,7 +220,8 @@ export default function Agricultural() {
 
                   {typeof mini.count === "number" && mini.count > 0 && (
                     <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
-                      {mini.count} {mini.count === 1 ? "property" : "properties"}
+                      {mini.count}{" "}
+                      {mini.count === 1 ? "property" : "properties"}
                     </span>
                   )}
                 </div>

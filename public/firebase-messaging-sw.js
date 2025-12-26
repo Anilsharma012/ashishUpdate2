@@ -12,7 +12,9 @@ self.addEventListener("push", function (event) {
       data.icon ||
       "/favicon.ico";
     const tag =
-      (data.notification && data.notification.tag) || data.tag || "notification";
+      (data.notification && data.notification.tag) ||
+      data.tag ||
+      "notification";
 
     const options = {
       body,
@@ -23,7 +25,10 @@ self.addEventListener("push", function (event) {
       renotify: true,
       requireInteraction: false,
       data: {
-        url: (data.notification && data.notification.click_action) || (data.data && data.data.url) || "/notifications",
+        url:
+          (data.notification && data.notification.click_action) ||
+          (data.data && data.data.url) ||
+          "/notifications",
         timestamp: Date.now(),
       },
     };

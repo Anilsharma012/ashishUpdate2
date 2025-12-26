@@ -56,14 +56,19 @@ async function apiGet(path: string) {
   const res = await fetch(`/api${path}`, {
     headers: { "Content-Type": "application/json" },
   });
-  return { ok: res.ok, status: res.status, json: await res.json().catch(() => null) };
+  return {
+    ok: res.ok,
+    status: res.status,
+    json: await res.json().catch(() => null),
+  };
 }
 
 export default function Buy() {
   const navigate = useNavigate();
 
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<Subcategory | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fallbackSubcategories: Subcategory[] = useMemo(
@@ -132,8 +137,12 @@ export default function Buy() {
       if ((res?.ok || res?.status === 200) && json?.success) {
         const d = json?.data;
         if (Array.isArray(d)) {
-          const found = d.find((c: any) => safeKebab(c?.slug ?? c?.name) === "buy");
-          rawSubs = Array.isArray(found?.subcategories) ? found.subcategories : [];
+          const found = d.find(
+            (c: any) => safeKebab(c?.slug ?? c?.name) === "buy",
+          );
+          rawSubs = Array.isArray(found?.subcategories)
+            ? found.subcategories
+            : [];
         } else if (Array.isArray(d?.category?.subcategories)) {
           rawSubs = d.category.subcategories;
         } else if (Array.isArray(d?.subcategories)) {
@@ -177,7 +186,9 @@ export default function Buy() {
 
   useEffect(() => {
     if (!selectedSubcategory) return;
-    const stillExists = subcategories.some((s) => s.slug === selectedSubcategory.slug);
+    const stillExists = subcategories.some(
+      (s) => s.slug === selectedSubcategory.slug,
+    );
     if (!stillExists) setSelectedSubcategory(null);
   }, [subcategories, selectedSubcategory]);
 
@@ -234,8 +245,12 @@ export default function Buy() {
           {!selectedSubcategory ? (
             <>
               <div className="mb-8 pb-6 border-b-2 border-red-200">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Buy Properties</h1>
-                <p className="text-gray-600 text-base">Choose what you want to buy</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  Buy Properties
+                </h1>
+                <p className="text-gray-600 text-base">
+                  Choose what you want to buy
+                </p>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
@@ -263,7 +278,8 @@ export default function Buy() {
                       )}
 
                       <div className="flex flex-wrap gap-2">
-                        {Array.isArray(subcategory.miniSubcategories) && subcategory.miniSubcategories.length > 0 ? (
+                        {Array.isArray(subcategory.miniSubcategories) &&
+                        subcategory.miniSubcategories.length > 0 ? (
                           <span className="inline-block text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">
                             {subcategory.miniSubcategories.length} options
                           </span>
@@ -292,8 +308,12 @@ export default function Buy() {
                   Back
                 </button>
 
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{selectedSubcategory.name}</h1>
-                <p className="text-gray-600 text-base mb-4">Select a subcategory</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  {selectedSubcategory.name}
+                </h1>
+                <p className="text-gray-600 text-base mb-4">
+                  Select a subcategory
+                </p>
 
                 <button
                   type="button"
@@ -339,8 +359,12 @@ export default function Buy() {
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
-                  <p className="text-gray-700 font-medium">No subcategories found here</p>
-                  <p className="text-sm text-gray-600 mt-1">You can still view all listings in this category</p>
+                  <p className="text-gray-700 font-medium">
+                    No subcategories found here
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can still view all listings in this category
+                  </p>
                 </div>
               )}
             </>

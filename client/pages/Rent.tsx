@@ -166,7 +166,9 @@ export default function Rent() {
           const found = d.find(
             (c: any) => safeKebab(c?.slug ?? c?.name) === "rent",
           );
-          rawSubs = Array.isArray(found?.subcategories) ? found.subcategories : [];
+          rawSubs = Array.isArray(found?.subcategories)
+            ? found.subcategories
+            : [];
         }
         // Case B: /categories/:slug returns object with subcategories
         else if (Array.isArray(d?.subcategories)) {
@@ -333,7 +335,8 @@ export default function Rent() {
                           </span>
                         ) : null}
 
-                        {subcategory.count !== undefined && subcategory.count !== 0 ? (
+                        {subcategory.count !== undefined &&
+                        subcategory.count !== 0 ? (
                           <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
                             {subcategory.count} properties
                           </span>
@@ -359,7 +362,9 @@ export default function Rent() {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                   {selectedSubcategory.name}
                 </h1>
-                <p className="text-gray-600 text-base mb-4">Select a subcategory</p>
+                <p className="text-gray-600 text-base mb-4">
+                  Select a subcategory
+                </p>
 
                 <button
                   type="button"
@@ -405,8 +410,12 @@ export default function Rent() {
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
-                  <p className="text-gray-700 font-medium">No subcategories found here</p>
-                  <p className="text-sm text-gray-600 mt-1">You can still view all listings in this category</p>
+                  <p className="text-gray-700 font-medium">
+                    No subcategories found here
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can still view all listings in this category
+                  </p>
                 </div>
               )}
             </>

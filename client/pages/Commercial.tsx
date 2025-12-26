@@ -51,7 +51,9 @@ export default function Commercial() {
       let localActiveSubSlug = "";
 
       // First try to fetch the commercial category with subcategories
-      const catResponse = await fetch("/api/categories/commercial?withSub=true");
+      const catResponse = await fetch(
+        "/api/categories/commercial?withSub=true",
+      );
 
       if (catResponse.ok) {
         const catData = await catResponse.json();
@@ -290,7 +292,8 @@ export default function Commercial() {
               Commercial Properties
             </h1>
             <p className="text-gray-600 text-base">
-              Find commercial spaces for your business - Shops, Offices, Warehouses & more
+              Find commercial spaces for your business - Shops, Offices,
+              Warehouses & more
             </p>
           </div>
 
@@ -331,7 +334,9 @@ export default function Commercial() {
 
           {miniSubcategories.length === 0 && (
             <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-8 text-center">
-              <p className="text-gray-700 font-medium">No commercial properties available yet</p>
+              <p className="text-gray-700 font-medium">
+                No commercial properties available yet
+              </p>
             </div>
           )}
 
@@ -339,7 +344,9 @@ export default function Commercial() {
           {miniSubcategories.length > 0 && (
             <div className="mt-8 p-4 bg-red-50 border-2 border-red-200 rounded-2xl">
               <p className="text-sm text-red-900">
-                💡 <strong>Auto-Updated Listings:</strong> New commercial properties are automatically displayed here after admin approval.
+                💡 <strong>Auto-Updated Listings:</strong> New commercial
+                properties are automatically displayed here after admin
+                approval.
               </p>
             </div>
           )}
