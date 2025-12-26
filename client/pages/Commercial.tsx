@@ -283,44 +283,44 @@ export default function Commercial() {
       <main className="pb-16">
         <CategoryBar />
 
-        <div className="px-4 py-6">
+        <div className="px-4 py-8">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          <div className="mb-8 pb-6 border-b-2 border-red-200">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
               Commercial Properties
             </h1>
-            <p className="text-gray-600">
-              Find commercial spaces for your business - Shops, Offices,
-              Warehouses & more
+            <p className="text-gray-600 text-base">
+              Find commercial spaces for your business - Shops, Offices, Warehouses & more
             </p>
           </div>
 
           {/* Mini-subcategories Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {miniSubcategories.map((mini) => (
               <button
                 key={mini._id || mini.slug}
                 onClick={() => handleMiniClick(mini)}
-                className="mini-subcat-card bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-all shadow-sm hover:shadow-md cursor-pointer"
+                className="mini-subcat-card group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400 text-left"
                 data-testid="mini-subcat-card"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="relative p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
                       {mini.name}
                     </h3>
-                    {mini.description && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {mini.description}
-                      </p>
-                    )}
+                    <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
                   </div>
-                  <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
-                </div>
 
-                {/* Property count badge */}
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium">
+                  {mini.description && (
+                    <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2">
+                      {mini.description}
+                    </p>
+                  )}
+
+                  {/* Property count badge */}
+                  <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
                     {mini.count ?? 0}{" "}
                     {(mini.count ?? 0) === 1 ? "property" : "properties"}
                   </span>
@@ -330,20 +330,16 @@ export default function Commercial() {
           </div>
 
           {miniSubcategories.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">
-                No commercial properties available yet
-              </p>
+            <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-8 text-center">
+              <p className="text-gray-700 font-medium">No commercial properties available yet</p>
             </div>
           )}
 
           {/* Note about auto-categorization */}
           {miniSubcategories.length > 0 && (
-            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-900">
-                💡 <strong>Auto-Updated Listings:</strong> New commercial
-                properties are automatically displayed here after admin
-                approval.
+            <div className="mt-8 p-4 bg-red-50 border-2 border-red-200 rounded-2xl">
+              <p className="text-sm text-red-900">
+                💡 <strong>Auto-Updated Listings:</strong> New commercial properties are automatically displayed here after admin approval.
               </p>
             </div>
           )}
