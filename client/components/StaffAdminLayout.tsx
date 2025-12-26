@@ -37,7 +37,11 @@ import {
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { cn } from "../lib/utils";
-import { hasPermission, hasAnyPermission, getRoleDisplayName } from "../utils/permissions";
+import {
+  hasPermission,
+  hasAnyPermission,
+  getRoleDisplayName,
+} from "../utils/permissions";
 
 interface StaffAdminLayoutProps {
   children: React.ReactNode;
@@ -68,14 +72,51 @@ const fullMenuItems: MenuItem[] = [
     icon: Megaphone,
     permissions: ["ads.manage"],
     children: [
-      { id: "ads-listing", label: "Ads Listing", icon: List, permissions: ["ads.view"] },
-      { id: "categories", label: "Categories", icon: Layers, permissions: ["categories.manage"] },
-      { id: "custom-fields", label: "Custom Fields", icon: Settings, permissions: ["ads.manage"] },
-      { id: "ad-management", label: "Advertisement Management", icon: Megaphone, permissions: ["ads.manage"] },
+      {
+        id: "ads-listing",
+        label: "Ads Listing",
+        icon: List,
+        permissions: ["ads.view"],
+      },
+      {
+        id: "categories",
+        label: "Categories",
+        icon: Layers,
+        permissions: ["categories.manage"],
+      },
+      {
+        id: "custom-fields",
+        label: "Custom Fields",
+        icon: Settings,
+        permissions: ["ads.manage"],
+      },
+      {
+        id: "ad-management",
+        label: "Advertisement Management",
+        icon: Megaphone,
+        permissions: ["ads.manage"],
+      },
 
-      { id: "pending-approval", label: "Pending Approvals", icon: AlertTriangle, badge: "new", permissions: ["ads.approve"] },
-      { id: "premium-approvals", label: "Premium Listing Approvals", icon: Crown, badge: "3", permissions: ["ads.approve"] },
-      { id: "ad-tips", label: "Advertisement Tips", icon: HelpCircle, permissions: ["content.manage"] },
+      {
+        id: "pending-approval",
+        label: "Pending Approvals",
+        icon: AlertTriangle,
+        badge: "new",
+        permissions: ["ads.approve"],
+      },
+      {
+        id: "premium-approvals",
+        label: "Premium Listing Approvals",
+        icon: Crown,
+        badge: "3",
+        permissions: ["ads.approve"],
+      },
+      {
+        id: "ad-tips",
+        label: "Advertisement Tips",
+        icon: HelpCircle,
+        permissions: ["content.manage"],
+      },
     ],
   },
   {
@@ -84,9 +125,24 @@ const fullMenuItems: MenuItem[] = [
     icon: Package,
     permissions: ["packages.manage"],
     children: [
-      { id: "package-management", label: "Package Management", icon: Package, permissions: ["packages.manage"] },
-      { id: "listing-package", label: "Advertisement Listing Package", icon: List, permissions: ["packages.manage"] },
-      { id: "feature-package", label: "Feature Advertisement Package", icon: Star, permissions: ["packages.manage"] },
+      {
+        id: "package-management",
+        label: "Package Management",
+        icon: Package,
+        permissions: ["packages.manage"],
+      },
+      {
+        id: "listing-package",
+        label: "Advertisement Listing Package",
+        icon: List,
+        permissions: ["packages.manage"],
+      },
+      {
+        id: "feature-package",
+        label: "Feature Advertisement Package",
+        icon: Star,
+        permissions: ["packages.manage"],
+      },
     ],
   },
   {
@@ -95,9 +151,25 @@ const fullMenuItems: MenuItem[] = [
     icon: CreditCard,
     permissions: ["payments.manage"],
     children: [
-      { id: "transactions", label: "Payment Transactions", icon: CreditCard, permissions: ["payments.view"] },
-      { id: "manual-payment-approval", label: "Manual Payment Approval", icon: Shield, badge: "5", permissions: ["payments.approve"] },
-      { id: "bank-transfer", label: "Bank Transfer", icon: CreditCard, permissions: ["payments.manage"] },
+      {
+        id: "transactions",
+        label: "Payment Transactions",
+        icon: CreditCard,
+        permissions: ["payments.view"],
+      },
+      {
+        id: "manual-payment-approval",
+        label: "Manual Payment Approval",
+        icon: Shield,
+        badge: "5",
+        permissions: ["payments.approve"],
+      },
+      {
+        id: "bank-transfer",
+        label: "Bank Transfer",
+        icon: CreditCard,
+        permissions: ["payments.manage"],
+      },
     ],
   },
   {
@@ -106,8 +178,18 @@ const fullMenuItems: MenuItem[] = [
     icon: Users,
     permissions: ["users.manage"],
     children: [
-      { id: "all-users", label: "All Users", icon: Users, permissions: ["users.view"] },
-      { id: "user-analytics", label: "User Analytics", icon: BarChart3, permissions: ["analytics.view"] },
+      {
+        id: "all-users",
+        label: "All Users",
+        icon: Users,
+        permissions: ["users.view"],
+      },
+      {
+        id: "user-analytics",
+        label: "User Analytics",
+        icon: BarChart3,
+        permissions: ["analytics.view"],
+      },
     ],
   },
   {
@@ -116,11 +198,37 @@ const fullMenuItems: MenuItem[] = [
     icon: Users,
     permissions: ["sellers.manage"],
     children: [
-      { id: "seller-management", label: "Seller Management", icon: Users, permissions: ["sellers.manage"] },
-      { id: "verification-fields", label: "Verification Fields", icon: Shield, permissions: ["sellers.manage"] },
-      { id: "seller-verification", label: "Seller Verification", icon: UserCheck, badge: "12", permissions: ["sellers.verify"] },
-      { id: "seller-review", label: "Seller Review", icon: Star, permissions: ["sellers.view"] },
-      { id: "seller-review-report", label: "Seller Review Report", icon: Flag, permissions: ["sellers.view"] },
+      {
+        id: "seller-management",
+        label: "Seller Management",
+        icon: Users,
+        permissions: ["sellers.manage"],
+      },
+      {
+        id: "verification-fields",
+        label: "Verification Fields",
+        icon: Shield,
+        permissions: ["sellers.manage"],
+      },
+      {
+        id: "seller-verification",
+        label: "Seller Verification",
+        icon: UserCheck,
+        badge: "12",
+        permissions: ["sellers.verify"],
+      },
+      {
+        id: "seller-review",
+        label: "Seller Review",
+        icon: Star,
+        permissions: ["sellers.view"],
+      },
+      {
+        id: "seller-review-report",
+        label: "Seller Review Report",
+        icon: Flag,
+        permissions: ["sellers.view"],
+      },
     ],
   },
   {
@@ -129,8 +237,18 @@ const fullMenuItems: MenuItem[] = [
     icon: Home,
     permissions: ["content.manage"],
     children: [
-      { id: "slider", label: "Slider", icon: Sliders, permissions: ["content.manage"] },
-      { id: "feature-section", label: "Feature Section", icon: Star, permissions: ["content.manage"] },
+      {
+        id: "slider",
+        label: "Slider",
+        icon: Sliders,
+        permissions: ["content.manage"],
+      },
+      {
+        id: "feature-section",
+        label: "Feature Section",
+        icon: Star,
+        permissions: ["content.manage"],
+      },
     ],
   },
   {
@@ -139,10 +257,30 @@ const fullMenuItems: MenuItem[] = [
     icon: MapPin,
     permissions: ["locations.manage"],
     children: [
-      { id: "countries", label: "Countries", icon: Globe, permissions: ["locations.manage"] },
-      { id: "states", label: "States", icon: MapPin, permissions: ["locations.manage"] },
-      { id: "cities", label: "Cities", icon: MapPin, permissions: ["locations.manage"] },
-      { id: "areas", label: "Areas", icon: MapPin, permissions: ["locations.manage"] },
+      {
+        id: "countries",
+        label: "Countries",
+        icon: Globe,
+        permissions: ["locations.manage"],
+      },
+      {
+        id: "states",
+        label: "States",
+        icon: MapPin,
+        permissions: ["locations.manage"],
+      },
+      {
+        id: "cities",
+        label: "Cities",
+        icon: MapPin,
+        permissions: ["locations.manage"],
+      },
+      {
+        id: "areas",
+        label: "Areas",
+        icon: MapPin,
+        permissions: ["locations.manage"],
+      },
     ],
   },
   {
@@ -151,8 +289,19 @@ const fullMenuItems: MenuItem[] = [
     icon: BarChart3,
     permissions: ["reports.manage"],
     children: [
-      { id: "report-reasons", label: "Report Reasons", icon: AlertTriangle, permissions: ["reports.manage"] },
-      { id: "user-reports", label: "User Reports", icon: Flag, badge: "3", permissions: ["reports.view"] },
+      {
+        id: "report-reasons",
+        label: "Report Reasons",
+        icon: AlertTriangle,
+        permissions: ["reports.manage"],
+      },
+      {
+        id: "user-reports",
+        label: "User Reports",
+        icon: Flag,
+        badge: "3",
+        permissions: ["reports.view"],
+      },
     ],
   },
   {
@@ -161,8 +310,18 @@ const fullMenuItems: MenuItem[] = [
     icon: Send,
     permissions: ["promotions.manage"],
     children: [
-      { id: "send-notification", label: "Send Notification", icon: Send, permissions: ["notifications.send"] },
-      { id: "customers", label: "Customers", icon: Users, permissions: ["users.view"] },
+      {
+        id: "send-notification",
+        label: "Send Notification",
+        icon: Send,
+        permissions: ["notifications.send"],
+      },
+      {
+        id: "customers",
+        label: "Customers",
+        icon: Users,
+        permissions: ["users.view"],
+      },
     ],
   },
   {
@@ -171,8 +330,18 @@ const fullMenuItems: MenuItem[] = [
     icon: Crown,
     permissions: ["staff.manage"],
     children: [
-      { id: "role", label: "Role", icon: Shield, permissions: ["roles.manage"] },
-      { id: "staff-management", label: "Staff Management", icon: Crown, permissions: ["staff.manage"] },
+      {
+        id: "role",
+        label: "Role",
+        icon: Shield,
+        permissions: ["roles.manage"],
+      },
+      {
+        id: "staff-management",
+        label: "Staff Management",
+        icon: Crown,
+        permissions: ["staff.manage"],
+      },
     ],
   },
   {
@@ -181,12 +350,43 @@ const fullMenuItems: MenuItem[] = [
     icon: FileText,
     permissions: ["content.manage"],
     children: [
-      { id: "content-management", label: "Create New Page", icon: Plus, permissions: ["content.create"] },
-      { id: "static-pages", label: "All Pages", icon: FileText, permissions: ["content.view"] },
-      { id: "footer-management", label: "Footer Settings", icon: Globe, permissions: ["content.manage"] },
-      { id: "blog-management", label: "Blog Management", icon: FileText, permissions: ["blog.manage"] },
-      { id: "faq", label: "FAQ Management", icon: HelpCircle, permissions: ["content.manage"] },
-      { id: "web-queries", label: "Web User Queries", icon: MessageSquare, badge: "7", permissions: ["support.view"] },
+      {
+        id: "content-management",
+        label: "Create New Page",
+        icon: Plus,
+        permissions: ["content.create"],
+      },
+      {
+        id: "static-pages",
+        label: "All Pages",
+        icon: FileText,
+        permissions: ["content.view"],
+      },
+      {
+        id: "footer-management",
+        label: "Footer Settings",
+        icon: Globe,
+        permissions: ["content.manage"],
+      },
+      {
+        id: "blog-management",
+        label: "Blog Management",
+        icon: FileText,
+        permissions: ["blog.manage"],
+      },
+      {
+        id: "faq",
+        label: "FAQ Management",
+        icon: HelpCircle,
+        permissions: ["content.manage"],
+      },
+      {
+        id: "web-queries",
+        label: "Web User Queries",
+        icon: MessageSquare,
+        badge: "7",
+        permissions: ["support.view"],
+      },
     ],
   },
   {
@@ -195,17 +395,45 @@ const fullMenuItems: MenuItem[] = [
     icon: Wrench,
     permissions: ["system.manage"],
     children: [
-      { id: "system-status", label: "System Status", icon: Activity, permissions: ["system.view"] },
-      { id: "login-test", label: "Login Test Suite", icon: Users, permissions: ["system.test"] },
-      { id: "settings", label: "Settings", icon: Settings, permissions: ["system.manage"] },
-      { id: "system-update", label: "System Update", icon: RefreshCw, permissions: ["system.update"] },
-      { id: "auth-debug", label: "Auth Debug", icon: Shield, permissions: ["system.debug"] },
-      { id: "role-debug", label: "Role Debug", icon: Shield, permissions: ["dashboard.view"] },
+      {
+        id: "system-status",
+        label: "System Status",
+        icon: Activity,
+        permissions: ["system.view"],
+      },
+      {
+        id: "login-test",
+        label: "Login Test Suite",
+        icon: Users,
+        permissions: ["system.test"],
+      },
+      {
+        id: "settings",
+        label: "Settings",
+        icon: Settings,
+        permissions: ["system.manage"],
+      },
+      {
+        id: "system-update",
+        label: "System Update",
+        icon: RefreshCw,
+        permissions: ["system.update"],
+      },
+      {
+        id: "auth-debug",
+        label: "Auth Debug",
+        icon: Shield,
+        permissions: ["system.debug"],
+      },
+      {
+        id: "role-debug",
+        label: "Role Debug",
+        icon: Shield,
+        permissions: ["dashboard.view"],
+      },
     ],
   },
 ];
-
-
 
 export default function StaffAdminLayout({
   children,
@@ -226,7 +454,9 @@ export default function StaffAdminLayout({
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(["dashboard"]);
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    "dashboard",
+  ]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter menu items based on permissions
@@ -236,7 +466,7 @@ export default function StaffAdminLayout({
   };
 
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
-    return items.filter(item => {
+    return items.filter((item) => {
       // Check if user has permission for this item
       if (!hasMenuPermission(item.permissions)) return false;
 

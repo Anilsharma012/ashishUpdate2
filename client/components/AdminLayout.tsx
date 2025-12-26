@@ -318,7 +318,9 @@ export default function AdminLayout({
   const getBadgeForItem = (itemId: string): string | undefined => {
     switch (itemId) {
       case "pending-approval":
-        return counts.pendingCount > 0 ? String(counts.pendingCount) : undefined;
+        return counts.pendingCount > 0
+          ? String(counts.pendingCount)
+          : undefined;
       case "manual-payment-approval":
         return counts.bankTransfersPending > 0
           ? String(counts.bankTransfersPending)
