@@ -91,3 +91,65 @@ export const removeFcmToken: RequestHandler = async (req, res) => {
     });
   }
 };
+
+/**
+ * Debug endpoint - check FCM token status for a user
+ * Admin only - used to diagnose notification delivery issues
+ */
+export const getFcmTokenStatus: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const { userId } = req.params;
+
+    if (!userId || !ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: "Valid user ID is required",
+      });
+    }
+
+    const userIdObj = new ObjectId(userId);
+    const user = await db
+      .collection("users")
+      .findOne({ _id: userIdObj }, { projection: { name: 1, email: 1, fcmTokens: 1, lastFcmTokenUpdate: 1 } });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    const tokens = await db
+      .collection("fcm_tokens")
+      .find({ userId: userIdObj })
+      .toArray();
+
+    res.json({
+      success: true,
+      data: {
+        userId: userId,
+        userName: user.name || "Unknown",
+        email: user.email,
+        fcmTokensCount: (user.fcmTokens || []).length,
+        fcmTokens: (user.fcmTokens || []).map(t => ({
+          token: t.substring(0, 20) + "...", // Masked for security
+          fullToken: t // Store full token for verification
+        })),
+        tokenDetails: tokens.map(t => ({
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          deviceInfo: t.deviceInfo || {}
+        })),
+        lastUpdated: user.lastFcmTokenUpdate || "Never",
+        status: (user.fcmTokens || []).length > 0 ? "✅ Ready" : "⚠️ No tokens"
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching FCM token status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch FCM token status",
+    });
+  }
+};
