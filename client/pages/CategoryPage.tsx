@@ -278,44 +278,51 @@ export default function CategoryPage(props: {
               </div>
 
               {subcategories.length ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {subcategories.map((sub) => (
                     <button
                       key={sub._id || sub.id || sub.slug}
                       onClick={() => openSub(sub)}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-95 border-2 border-red-200 bg-white hover:border-red-400"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 text-lg">
-                          {sub.name}
-                        </h3>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <div className="relative p-5 text-left">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-snug flex-1 group-hover:text-red-700 transition-colors">
+                            {sub.name}
+                          </h3>
+                          <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 transition-colors flex-shrink-0 ml-2" />
+                        </div>
+
+                        {sub.description ? (
+                          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                            {sub.description}
+                          </p>
+                        ) : null}
+
+                        <div className="flex flex-wrap gap-2">
+                          {Array.isArray(sub.miniSubcategories) &&
+                          sub.miniSubcategories.length > 0 ? (
+                            <span className="inline-block text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">
+                              {sub.miniSubcategories.length} options
+                            </span>
+                          ) : null}
+
+                          {typeof sub.count === "number" && sub.count > 0 ? (
+                            <span className="inline-block text-xs bg-red-600 text-white px-3 py-1 rounded-full font-bold">
+                              {sub.count} properties
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
-
-                      {sub.description ? (
-                        <p className="text-sm text-gray-500 mb-3">
-                          {sub.description}
-                        </p>
-                      ) : null}
-
-                      {Array.isArray(sub.miniSubcategories) &&
-                      sub.miniSubcategories.length > 0 ? (
-                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                          {sub.miniSubcategories.length} options
-                        </span>
-                      ) : null}
-
-                      {typeof sub.count === "number" && sub.count > 0 ? (
-                        <span className="ml-2 text-xs bg-[#C70000] text-white px-2 py-1 rounded-full font-medium">
-                          {sub.count} properties
-                        </span>
-                      ) : null}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700">
-                  No subcategories found. (Admin se add karke check karo)
+                <div className="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 font-medium">No subcategories found</p>
+                  <p className="text-sm text-gray-600 mt-1">Please contact admin to add categories</p>
                 </div>
               )}
             </>
