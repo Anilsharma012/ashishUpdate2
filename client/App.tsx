@@ -137,7 +137,7 @@ function App() {
                 <Sonner />
                 <NetworkStatus />
                 <PWAInstallPrompt />
-              
+                <NotificationPermissionPrompt />
 
                 <AdsenseProvider />
                 <BrowserRouter>
