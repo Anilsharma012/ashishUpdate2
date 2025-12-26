@@ -235,9 +235,9 @@ function OLXStyleCategories() {
                       <img
                         src={category.icon}
                         alt={category.name}
-                        className="w-full h-full object-contain p-1 invert-colors"
+                        className="w-full h-full object-contain p-1"
                         style={{
-                          filter: "brightness(0) saturate(100%) invert(20%) sepia(71%) saturate(1424%) hue-rotate(314deg) brightness(96%) contrast(90%)",
+                          filter: "hue-rotate(320deg) saturate(1.2) brightness(0.9)",
                         }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
