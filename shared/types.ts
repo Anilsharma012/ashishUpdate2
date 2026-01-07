@@ -55,6 +55,7 @@ export interface Property {
   premiumApprovedAt?: Date;
   premiumApprovedBy?: string; // admin user ID
   contactVisible: boolean; // Whether contact info should be visible publicly
+  shareContactInfo?: boolean; // Legacy field - use contactVisible instead
   packageId?: string; // Advertisement package
   packageExpiry?: Date;
   views: number;

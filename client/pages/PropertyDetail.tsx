@@ -1261,7 +1261,7 @@ export default function PropertyDetail() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="font-medium">{property.contactInfo?.name}</p>
-                  {property.shareContactInfo && (
+                  {(property.shareContactInfo || property.contactVisible) && (
                     <p className="text-sm text-gray-600">
                       {property.contactInfo?.email}
                     </p>
@@ -1282,7 +1282,7 @@ export default function PropertyDetail() {
                     )}
                     {startingChat ? "Starting..." : "Message Owner"}
                   </Button>
-                  {property.shareContactInfo && (
+                  {(property.shareContactInfo || property.contactVisible) && (
                     <>
                       <Button
                         variant="outline"
@@ -1323,7 +1323,7 @@ export default function PropertyDetail() {
                     )}
                     {startingChat ? "Starting..." : "Message Owner"}
                   </Button>
-                  {property.shareContactInfo && (
+                  {(property.shareContactInfo || property.contactVisible) && (
                     <>
                       <Button
                         variant="outline"
@@ -1350,7 +1350,7 @@ export default function PropertyDetail() {
                   )}
                 </div>
 
-                {property.shareContactInfo && (
+                {(property.shareContactInfo || property.contactVisible) && (
                   <div className="pt-4 border-t">
                     <p className="text-xs text-gray-500 text-center">
                       Contact details are verified by our team
