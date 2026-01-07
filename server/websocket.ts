@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { getDatabase } from './db/mongodb';
 import { ObjectId } from 'mongodb';
 
+import { sendPushNotificationToUser } from './utils/fcm-push';
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 interface AuthenticatedWebSocket extends WebSocket {
@@ -390,7 +391,19 @@ export class ChatWebSocketServer {
           createdAt: new Date(),
           actionUrl: `/chat?conversation=${conversationId}`,
         });
-      }
+      
+        // 🔔 Also send system push notification (FCM)
+        try {
+          await sendPushNotificationToUser(
+            message.sellerId,
+            \"New Chat Request\",
+            \"A potential buyer wants to chat with you directly about your property.\",
+            { url: `/chat?conversation=${conversationId}` },
+          );
+        } catch (err) {
+          console.warn(\"Push send failed (non-fatal):\", err);
+        }
+}
 
     } catch (error) {
       console.error('Error handling handoff request:', error);

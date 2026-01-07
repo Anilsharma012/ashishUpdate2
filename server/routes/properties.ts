@@ -781,10 +781,22 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     // Confirmation email (best effort)
     try {
-      await sendPropertyConfirmationEmail({
-        to: contactInfo?.email || "",
-        propertyTitle: propertyData.title,
-      });
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(String(userId)) });
+
+      const to = String(contactInfo?.email || user?.email || "").trim();
+      const name =
+        String(contactInfo?.name || user?.name || "User").trim() || "User";
+
+      if (to) {
+        await sendPropertyConfirmationEmail(
+          to,
+          name,
+          propertyData.title,
+          String(result.insertedId),
+        );
+      }
     } catch (e) {
       console.log("Email send failed (confirmation):", e);
     }
@@ -845,14 +857,34 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
 
     // Approval email (best effort)
     try {
-      const prop = await db.collection("properties").findOne({ _id: new ObjectId(id) });
-      if (prop?.contactInfo?.email) {
-        await sendPropertyApprovalEmail({
-          to: prop.contactInfo.email,
-          propertyTitle: prop.title || "Your Property",
-          status: approvalStatus,
-          reason: rejectionReason || "",
-        });
+      const prop = await db
+        .collection("properties")
+        .findOne({ _id: new ObjectId(id) });
+
+      if (prop) {
+        const user = prop.ownerId
+          ? await db
+              .collection("users")
+              .findOne({ _id: new ObjectId(String(prop.ownerId)) })
+          : null;
+
+        const to = String(prop?.contactInfo?.email || user?.email || "").trim();
+        const name =
+          String(prop?.contactInfo?.name || user?.name || "User").trim() ||
+          "User";
+
+        const isApproved = approvalStatus === "approved";
+
+        if (to) {
+          await sendPropertyApprovalEmail(
+            to,
+            name,
+            String(prop.title || "Your Property"),
+            String(prop._id),
+            isApproved,
+            rejectionReason || undefined,
+          );
+        }
       }
     } catch (e) {
       console.log("Email send failed (approval):", e);

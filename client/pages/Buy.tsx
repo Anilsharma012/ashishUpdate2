@@ -238,7 +238,7 @@ export default function Buy() {
     <div className="min-h-screen bg-white">
       <OLXStyleHeader />
 
-      <main className="pl-16">
+      <main className="pl-0 md:pl-16">
         <CategoryBar />
 
         <div className="px-4 py-8">

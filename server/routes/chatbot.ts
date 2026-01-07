@@ -3,6 +3,7 @@ import { getDatabase } from "../db/mongodb";
 import { ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
 
+import { sendPushNotificationToUser } from "../utils/fcm-push";
 interface ChatMessage {
   _id?: ObjectId;
   conversationId: ObjectId;
@@ -243,6 +244,18 @@ export const sendChatbotMessage: RequestHandler = async (req, res) => {
         createdAt: new Date(),
         actionUrl: `/chat?conversation=${currentConversationId}`,
       });
+      // 🔔 Send system push notification (FCM)
+      try {
+        await sendPushNotificationToUser(
+          sellerId,
+          "New Chat Request",
+          `A potential buyer wants to chat about your property${propertyData ? `: ${propertyData.title}` : ""}. They're ready to discuss details.`,
+          { url: `/chat?conversation=${currentConversationId}` },
+        );
+      } catch (err) {
+        console.warn("Push send failed (non-fatal):", err);
+      }
+
     }
 
     const response: ApiResponse<{

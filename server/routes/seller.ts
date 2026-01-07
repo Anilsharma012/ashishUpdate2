@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { getDatabase } from "../db/mongodb";
+import { sendPushNotificationToUser } from "../utils/fcm-push";
 import { ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
@@ -1262,6 +1263,18 @@ export const purchasePackage: RequestHandler = async (req, res) => {
       isRead: false,
       createdAt: new Date(),
     });
+    // 🔔 Send system push notification (FCM)
+    try {
+      await sendPushNotificationToUser(
+        sellerId,
+        "Package Purchase Successful",
+        `You have successfully purchased the ${packageDetails.name}. Your account has been upgraded!`,
+        { url: "/seller" },
+      );
+    } catch (err) {
+      console.warn("Push send failed (non-fatal):", err);
+    }
+
 
     res.json({
       success: true,

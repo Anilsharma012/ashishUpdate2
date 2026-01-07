@@ -9,7 +9,11 @@
   "background_color": "#ffffff",
   "theme_color": "#C70000",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity", "lifestyle"],
+  "categories": [
+    "business",
+    "productivity",
+    "lifestyle"
+  ],
   "lang": "en",
   "dir": "ltr",
   "icons": [
@@ -65,5 +69,6 @@
       "description": "Search for properties",
       "url": "/search"
     }
-  ]
+  ],
+  "gcm_sender_id": "103953800507"
 }

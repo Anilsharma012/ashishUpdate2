@@ -97,6 +97,31 @@ interface Property {
   };
 }
 
+const AMENITY_OPTIONS = [
+  "Lift",
+  "Parking",
+  "Power Backup",
+  "Security",
+  "Water Supply",
+  "Gas Pipeline",
+  "Gym",
+  "Swimming Pool",
+  "Garden",
+  "Club House",
+  "Gated Society",
+  "CCTV",
+  "Intercom",
+  "Fire Safety",
+  "Play Area",
+  "Community Hall",
+  "Maintenance Staff",
+  "Wifi",
+  "Air Conditioning",
+  "Furnished",
+  "Semi-Furnished",
+  "Unfurnished"
+];
+
 function CompletePropertyManagement() {
   const { token } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -121,6 +146,9 @@ function CompletePropertyManagement() {
   );
   const [saving, setSaving] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedImagePreviews, setSelectedImagePreviews] = useState<string[]>(
+    [],
+  );
 
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [bulkActionType, setBulkActionType] = useState<string>("");
@@ -129,6 +157,8 @@ function CompletePropertyManagement() {
     null,
   );
   const [rejectionReason, setRejectionReason] = useState("");
+
+  const [customAmenity, setCustomAmenity] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -181,6 +211,80 @@ function CompletePropertyManagement() {
     selectedPromotion,
     selectedApproval,
   ]);
+
+  // Build local preview URLs for selected images
+  useEffect(() => {
+    const urls = (selectedImages || []).map((file) =>
+      URL.createObjectURL(file),
+    );
+    setSelectedImagePreviews(urls);
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [selectedImages]);
+
+  const formatBytes = (bytes: number) => {
+    if (!bytes || bytes <= 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const val = bytes / Math.pow(1024, i);
+    return `${val.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  };
+
+  const handleImagesPicked = (files: FileList | null) => {
+    if (!files) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxSize = 8 * 1024 * 1024; // 8MB (matches backend multer limit)
+
+    const incoming = Array.from(files);
+    const valid: File[] = [];
+    const rejected: string[] = [];
+
+    incoming.forEach((f) => {
+      if (!allowedTypes.includes(f.type)) {
+        rejected.push(`${f.name} (only JPG/PNG/WEBP)`);
+        return;
+      }
+      if (f.size > maxSize) {
+        rejected.push(`${f.name} (max 8MB)`);
+        return;
+      }
+      valid.push(f);
+    });
+
+    if (rejected.length) {
+      setError(`Some files were skipped: ${rejected.slice(0, 3).join(", ")}${rejected.length > 3 ? " ..." : ""}`);
+    }
+
+    setSelectedImages((prev) => {
+      const merged = [...(prev || []), ...valid];
+      // Backend accepts max 10 images
+      return merged.slice(0, 10);
+    });
+  };
+
+  const removeSelectedImage = (index: number) => {
+    setSelectedImages((prev) => (prev || []).filter((_, i) => i !== index));
+  };
+
+
+const toggleAmenity = (amenity: string, enabled: boolean) => {
+  setFormData((prev) => {
+    const current = prev.amenities || [];
+    const next = enabled
+      ? Array.from(new Set([...current, amenity]))
+      : current.filter((a) => a !== amenity);
+    return { ...prev, amenities: next };
+  });
+};
+
+const addCustomAmenity = () => {
+  const value = customAmenity.trim();
+  if (!value) return;
+  toggleAmenity(value, true);
+  setCustomAmenity("");
+};
 
   const fetchProperties = async () => {
     if (!token) return;
@@ -581,6 +685,8 @@ function CompletePropertyManagement() {
   };
 
   const populateForm = (property: Property) => {
+    // When switching to edit, keep newly selected images empty
+    setSelectedImages([]);
     setFormData({
       title: property.title,
       description: property.description,
@@ -780,7 +886,11 @@ function CompletePropertyManagement() {
             Test Approval
           </Button>
           <Button
-            onClick={() => setShowCreateDialog(true)}
+            onClick={() => {
+              setError("");
+              resetForm();
+              setShowCreateDialog(true);
+            }}
             className="bg-[#C70000] hover:bg-[#A60000]"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -1452,11 +1562,339 @@ function CompletePropertyManagement() {
               />
             </div>
 
-            {/* Specifications, amenities, images, promotions ... (same as your code above) */}
-            {/* ------- SKIPPING FOR BREVITY: you already had this part correct ------- */}
 
-            {/* I am leaving the rest of the create dialog body exactly as in your original code */}
-            {/* ... paste your existing Specifications + Amenities + Images + Promotion UI here ... */}
+{/* Promotion & Status */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label className="block text-sm font-medium mb-2">
+      Listing Status
+    </label>
+    <Select
+      value={formData.status}
+      onValueChange={(value: any) =>
+        setFormData({ ...formData, status: value })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="active">Active</SelectItem>
+        <SelectItem value="inactive">Inactive</SelectItem>
+        <SelectItem value="sold">Sold</SelectItem>
+        <SelectItem value="rented">Rented</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium mb-2">
+      Promotion Type
+    </label>
+    <Select
+      value={formData.promotionType}
+      onValueChange={(value: any) =>
+        setFormData({ ...formData, promotionType: value })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="free">Free</SelectItem>
+        <SelectItem value="paid">Paid</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  <div className="flex items-center justify-between rounded-lg border p-3">
+    <div className="space-y-0.5">
+      <div className="text-sm font-medium flex items-center gap-2">
+        <Star className="h-4 w-4 text-orange-600" />
+        Featured
+      </div>
+      <div className="text-xs text-gray-500">
+        Show this listing as featured
+      </div>
+    </div>
+    <Switch
+      checked={formData.featured}
+      onCheckedChange={(checked) =>
+        setFormData({ ...formData, featured: checked })
+      }
+    />
+  </div>
+
+  <div className="flex items-center justify-between rounded-lg border p-3">
+    <div className="space-y-0.5">
+      <div className="text-sm font-medium flex items-center gap-2">
+        <Crown className="h-4 w-4 text-purple-700" />
+        Premium
+      </div>
+      <div className="text-xs text-gray-500">
+        Mark this listing as premium
+      </div>
+    </div>
+    <Switch
+      checked={formData.premium}
+      onCheckedChange={(checked) =>
+        setFormData({ ...formData, premium: checked })
+      }
+    />
+  </div>
+</div>
+
+{/* Specifications */}
+<div>
+  <label className="block text-sm font-medium mb-2">
+    Specifications
+  </label>
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Bedrooms
+      </label>
+      <Input
+        value={formData.specifications.bedrooms}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              bedrooms: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 2"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Bathrooms
+      </label>
+      <Input
+        value={formData.specifications.bathrooms}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              bathrooms: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 2"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Area (sqft)
+      </label>
+      <Input
+        value={formData.specifications.area}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              area: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 1200"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">Floor</label>
+      <Input
+        value={formData.specifications.floor}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              floor: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 3"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Total Floors
+      </label>
+      <Input
+        value={formData.specifications.totalFloors}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              totalFloors: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 10"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Facing
+      </label>
+      <Input
+        value={formData.specifications.facing}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              facing: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., East"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Parking
+      </label>
+      <Select
+        value={formData.specifications.parking}
+        onValueChange={(value: any) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              parking: value === "unspecified" ? "" : value,
+            },
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unspecified">Not specified</SelectItem>
+          <SelectItem value="yes">Yes</SelectItem>
+          <SelectItem value="no">No</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Furnishing
+      </label>
+      <Select
+        value={formData.specifications.furnished}
+        onValueChange={(value: any) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              furnished: value,
+            },
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unfurnished">Unfurnished</SelectItem>
+          <SelectItem value="semi-furnished">Semi-Furnished</SelectItem>
+          <SelectItem value="furnished">Furnished</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+</div>
+
+{/* Amenities */}
+<div>
+  <label className="block text-sm font-medium mb-2">Amenities</label>
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+    {AMENITY_OPTIONS.map((a) => (
+      <label key={a} className="flex items-center gap-2 text-sm">
+        <Checkbox
+          checked={(formData.amenities || []).includes(a)}
+          onCheckedChange={(v) => toggleAmenity(a, !!v)}
+        />
+        <span className="text-gray-700">{a}</span>
+      </label>
+    ))}
+  </div>
+  <div className="mt-3 flex flex-col sm:flex-row gap-2">
+    <Input
+      value={customAmenity}
+      onChange={(e) => setCustomAmenity(e.target.value)}
+      placeholder="Add custom amenity (optional)"
+    />
+    <Button type="button" variant="outline" onClick={addCustomAmenity}>
+      Add
+    </Button>
+  </div>
+</div>
+
+            {/* Property Images */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Property Images
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Upload up to 10 photos. Allowed: JPG / PNG / WEBP. Max 8MB per
+                image.
+              </p>
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  handleImagesPicked(e.target.files);
+                  // reset so picking same file again triggers onChange
+                  e.currentTarget.value = "";
+                }}
+              />
+
+              {selectedImages.length > 0 && (
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {selectedImagePreviews.map((src, idx) => (
+                    <div
+                      key={`${idx}-${selectedImages[idx]?.name}`}
+                      className="relative rounded-lg border bg-white overflow-hidden"
+                    >
+                      <img
+                        src={src}
+                        alt={`Selected ${idx + 1}`}
+                        className="w-full h-28 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedImage(idx)}
+                        className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-1 shadow"
+                        title="Remove"
+                      >
+                        <X className="h-4 w-4 text-gray-700" />
+                      </button>
+                      <div className="p-2 text-xs text-gray-600">
+                        <div className="truncate" title={selectedImages[idx]?.name}>
+                          {selectedImages[idx]?.name}
+                        </div>
+                        <div>{formatBytes(selectedImages[idx]?.size || 0)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end space-x-2 pt-6 border-t">
               <Button
@@ -1522,8 +1960,575 @@ function CompletePropertyManagement() {
               </div>
             </div>
 
-            {/* Agar chaho to yahan bhi description/location/specifications edit UI add kar sakte ho,
-                but maine abhi same minimal edit dialog hi rakha hai */}
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Enter property description..."
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Price Type *
+                </label>
+                <Select
+                  value={formData.priceType}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, priceType: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sale">For Sale</SelectItem>
+                    <SelectItem value="rent">For Rent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Property Type
+                </label>
+                <Select
+                  value={formData.propertyType}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, propertyType: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="residential">Residential</SelectItem>
+                    <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="plot">Plot/Land</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Sub Category
+              </label>
+              <Select
+                value={formData.subCategory}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, subCategory: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1bhk">1 BHK</SelectItem>
+                  <SelectItem value="2bhk">2 BHK</SelectItem>
+                  <SelectItem value="3bhk">3 BHK</SelectItem>
+                  <SelectItem value="4bhk">4 BHK</SelectItem>
+                  <SelectItem value="villa">Villa</SelectItem>
+                  <SelectItem value="plot">Plot</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Contact Information
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  placeholder="Contact Name"
+                  value={formData.contactInfo.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactInfo: {
+                        ...formData.contactInfo,
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="Phone Number *"
+                  value={formData.contactInfo.phone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactInfo: {
+                        ...formData.contactInfo,
+                        phone: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="Alternative Phone"
+                  value={formData.contactInfo.alternativePhone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactInfo: {
+                        ...formData.contactInfo,
+                        alternativePhone: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="WhatsApp Number *"
+                  value={formData.contactInfo.whatsappNumber}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactInfo: {
+                        ...formData.contactInfo,
+                        whatsappNumber: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="Email"
+                  value={formData.contactInfo.email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactInfo: {
+                        ...formData.contactInfo,
+                        email: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Rohtak Area
+              </label>
+              <Input
+                placeholder="Area in Rohtak"
+                value={formData.location.area}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, area: e.target.value },
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Complete Address
+              </label>
+              <Textarea
+                placeholder="House/Plot number, Street, Area, Rohtak, Haryana"
+                value={formData.location.address}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: {
+                      ...formData.location,
+                      address: e.target.value,
+                    },
+                  })
+                }
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Nearby Landmark
+              </label>
+              <Input
+                placeholder="e.g., Near Railway Station, Near Mall"
+                value={formData.location.landmark}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: {
+                      ...formData.location,
+                      landmark: e.target.value,
+                    },
+                  })
+                }
+              />
+            </div>
+
+
+{/* Promotion & Status */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label className="block text-sm font-medium mb-2">
+      Listing Status
+    </label>
+    <Select
+      value={formData.status}
+      onValueChange={(value: any) =>
+        setFormData({ ...formData, status: value })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="active">Active</SelectItem>
+        <SelectItem value="inactive">Inactive</SelectItem>
+        <SelectItem value="sold">Sold</SelectItem>
+        <SelectItem value="rented">Rented</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium mb-2">
+      Promotion Type
+    </label>
+    <Select
+      value={formData.promotionType}
+      onValueChange={(value: any) =>
+        setFormData({ ...formData, promotionType: value })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="free">Free</SelectItem>
+        <SelectItem value="paid">Paid</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  <div className="flex items-center justify-between rounded-lg border p-3">
+    <div className="space-y-0.5">
+      <div className="text-sm font-medium flex items-center gap-2">
+        <Star className="h-4 w-4 text-orange-600" />
+        Featured
+      </div>
+      <div className="text-xs text-gray-500">
+        Show this listing as featured
+      </div>
+    </div>
+    <Switch
+      checked={formData.featured}
+      onCheckedChange={(checked) =>
+        setFormData({ ...formData, featured: checked })
+      }
+    />
+  </div>
+
+  <div className="flex items-center justify-between rounded-lg border p-3">
+    <div className="space-y-0.5">
+      <div className="text-sm font-medium flex items-center gap-2">
+        <Crown className="h-4 w-4 text-purple-700" />
+        Premium
+      </div>
+      <div className="text-xs text-gray-500">
+        Mark this listing as premium
+      </div>
+    </div>
+    <Switch
+      checked={formData.premium}
+      onCheckedChange={(checked) =>
+        setFormData({ ...formData, premium: checked })
+      }
+    />
+  </div>
+</div>
+
+{/* Specifications */}
+<div>
+  <label className="block text-sm font-medium mb-2">
+    Specifications
+  </label>
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Bedrooms
+      </label>
+      <Input
+        value={formData.specifications.bedrooms}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              bedrooms: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 2"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Bathrooms
+      </label>
+      <Input
+        value={formData.specifications.bathrooms}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              bathrooms: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 2"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Area (sqft)
+      </label>
+      <Input
+        value={formData.specifications.area}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              area: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 1200"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">Floor</label>
+      <Input
+        value={formData.specifications.floor}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              floor: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 3"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Total Floors
+      </label>
+      <Input
+        value={formData.specifications.totalFloors}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              totalFloors: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., 10"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Facing
+      </label>
+      <Input
+        value={formData.specifications.facing}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              facing: e.target.value,
+            },
+          })
+        }
+        placeholder="e.g., East"
+      />
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Parking
+      </label>
+      <Select
+        value={formData.specifications.parking}
+        onValueChange={(value: any) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              parking: value === "unspecified" ? "" : value,
+            },
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unspecified">Not specified</SelectItem>
+          <SelectItem value="yes">Yes</SelectItem>
+          <SelectItem value="no">No</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div>
+      <label className="block text-xs text-gray-600 mb-1">
+        Furnishing
+      </label>
+      <Select
+        value={formData.specifications.furnished}
+        onValueChange={(value: any) =>
+          setFormData({
+            ...formData,
+            specifications: {
+              ...formData.specifications,
+              furnished: value,
+            },
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unfurnished">Unfurnished</SelectItem>
+          <SelectItem value="semi-furnished">Semi-Furnished</SelectItem>
+          <SelectItem value="furnished">Furnished</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+</div>
+
+{/* Amenities */}
+<div>
+  <label className="block text-sm font-medium mb-2">Amenities</label>
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+    {AMENITY_OPTIONS.map((a) => (
+      <label key={a} className="flex items-center gap-2 text-sm">
+        <Checkbox
+          checked={(formData.amenities || []).includes(a)}
+          onCheckedChange={(v) => toggleAmenity(a, !!v)}
+        />
+        <span className="text-gray-700">{a}</span>
+      </label>
+    ))}
+  </div>
+  <div className="mt-3 flex flex-col sm:flex-row gap-2">
+    <Input
+      value={customAmenity}
+      onChange={(e) => setCustomAmenity(e.target.value)}
+      placeholder="Add custom amenity (optional)"
+    />
+    <Button type="button" variant="outline" onClick={addCustomAmenity}>
+      Add
+    </Button>
+  </div>
+</div>
+
+            {/* Existing Images (read-only) */}
+            {selectedProperty?.images && selectedProperty.images.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Existing Images
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Existing images are shown below. Currently, removal is not
+                  supported from this screen.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {selectedProperty.images.slice(0, 12).map((img, i) => (
+                    <img
+                      key={`${img}-${i}`}
+                      src={img}
+                      alt={`Existing ${i + 1}`}
+                      className="w-full h-28 object-cover rounded-lg border"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add More Images */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Add More Images
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                You can upload more images (they will be appended). Up to 10 new
+                images at a time. Allowed: JPG / PNG / WEBP. Max 8MB per image.
+              </p>
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  handleImagesPicked(e.target.files);
+                  e.currentTarget.value = "";
+                }}
+              />
+              {selectedImages.length > 0 && (
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {selectedImagePreviews.map((src, idx) => (
+                    <div
+                      key={`${idx}-${selectedImages[idx]?.name}`}
+                      className="relative rounded-lg border bg-white overflow-hidden"
+                    >
+                      <img
+                        src={src}
+                        alt={`Selected ${idx + 1}`}
+                        className="w-full h-28 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedImage(idx)}
+                        className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-1 shadow"
+                        title="Remove"
+                      >
+                        <X className="h-4 w-4 text-gray-700" />
+                      </button>
+                      <div className="p-2 text-xs text-gray-600">
+                        <div
+                          className="truncate"
+                          title={selectedImages[idx]?.name}
+                        >
+                          {selectedImages[idx]?.name}
+                        </div>
+                        <div>
+                          {formatBytes(selectedImages[idx]?.size || 0)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end space-x-2 pt-6 border-t">
               <Button

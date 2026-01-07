@@ -857,15 +857,43 @@ export const updateProperty: RequestHandler = async (req, res) => {
     }
 
     // Parse JSON fields if they come as strings
-    const location =
-      typeof req.body.location === "string"
-        ? JSON.parse(req.body.location)
-        : req.body.location;
+   // Parse JSON fields if they come as strings
+const location =
+  typeof req.body.location === "string"
+    ? JSON.parse(req.body.location)
+    : req.body.location;
 
-    const contactInfo =
-      typeof req.body.contactInfo === "string"
-        ? JSON.parse(req.body.contactInfo)
-        : req.body.contactInfo;
+const contactInfo =
+  typeof req.body.contactInfo === "string"
+    ? JSON.parse(req.body.contactInfo)
+    : req.body.contactInfo;
+
+const specifications =
+  typeof req.body.specifications === "string"
+    ? JSON.parse(req.body.specifications)
+    : req.body.specifications;
+
+const amenities =
+  typeof req.body.amenities === "string"
+    ? JSON.parse(req.body.amenities)
+    : req.body.amenities;
+
+const featured =
+  typeof req.body.featured === "undefined"
+    ? undefined
+    : req.body.featured === "true" || (req.body.featured as any) === true;
+
+const premium =
+  typeof req.body.premium === "undefined"
+    ? undefined
+    : req.body.premium === "true" || (req.body.premium as any) === true;
+
+const promotionType = req.body.promotionType || "free";
+
+
+
+
+
 
     // Get existing property to preserve existing images
     const existingProperty = await db
@@ -882,19 +910,31 @@ export const updateProperty: RequestHandler = async (req, res) => {
     // Combine existing images with new images
     const combinedImages = [...(existingProperty.images || []), ...newImages];
 
-    const updateData = {
-      title: req.body.title,
-      description: req.body.description,
-      price: parseInt(req.body.price),
-      priceType: req.body.priceType,
-      propertyType: req.body.propertyType,
-      subCategory: req.body.subCategory,
-      location,
-      contactInfo,
-      status: req.body.status,
-      images: combinedImages,
-      updatedAt: new Date(),
-    };
+    const updateData: any = {
+  title: req.body.title,
+  description: req.body.description,
+  price: req.body.price ? parseInt(req.body.price) : existingProperty.price,
+  priceType: req.body.priceType,
+  propertyType: req.body.propertyType,
+  subCategory: req.body.subCategory,
+  location,
+  contactInfo,
+  status: req.body.status || existingProperty.status,
+  promotionType: promotionType || existingProperty.promotionType || "free",
+  featured:
+    typeof featured === "undefined" ? existingProperty.featured : featured,
+  premium:
+    typeof premium === "undefined" ? existingProperty.premium : premium,
+  specifications: {
+    ...(existingProperty.specifications || {}),
+    ...(specifications || {}),
+  },
+  amenities: Array.isArray(amenities)
+    ? amenities
+    : existingProperty.amenities || [],
+  images: combinedImages,
+  updatedAt: new Date(),
+};
 
     const result = await db
       .collection("properties")
@@ -940,39 +980,40 @@ export const createProperty: RequestHandler = async (req, res) => {
         : req.body.contactInfo;
 
     const propertyData = {
-      title: req.body.title,
-      description: req.body.description,
-      price: parseInt(req.body.price),
-      priceType: req.body.priceType,
-      propertyType: req.body.propertyType,
-      subCategory: req.body.subCategory,
-      location,
-      specifications: {
-        bedrooms: "",
-        bathrooms: "",
-        area: req.body.area || "",
-        facing: "",
-        floor: "",
-        totalFloors: "",
-        parking: "",
-        furnished: "",
-      },
-      images,
-      amenities: [],
-      ownerId: "admin",
-      ownerType: "admin",
-      contactInfo,
-      status: req.body.status || "active",
-      approvalStatus: "approved", // Admin added properties are auto-approved
-      featured: false,
-      premium: false,
-      contactVisible: true,
-      views: 0,
-      inquiries: 0,
-      phoneClicks: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  title: req.body.title,
+  description: req.body.description,
+  price: parseInt(req.body.price),
+  priceType: req.body.priceType,
+  propertyType: req.body.propertyType,
+  subCategory: req.body.subCategory,
+  location,
+  specifications: {
+    bedrooms: specifications?.bedrooms ?? "",
+    bathrooms: specifications?.bathrooms ?? "",
+    area: specifications?.area ?? req.body.area ?? "",
+    facing: specifications?.facing ?? "",
+    floor: specifications?.floor ?? "",
+    totalFloors: specifications?.totalFloors ?? "",
+    parking: specifications?.parking ?? "",
+    furnished: specifications?.furnished ?? "",
+  },
+  images,
+  amenities: Array.isArray(amenities) ? amenities : [],
+  ownerId: "admin",
+  ownerType: "admin",
+  contactInfo,
+  status: req.body.status || "active",
+  approvalStatus: "approved", // Admin added properties are auto-approved
+  featured: featured ?? false,
+  premium: premium ?? false,
+  promotionType,
+  contactVisible: true,
+  views: 0,
+  inquiries: 0,
+  phoneClicks: 0,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
     const result = await db.collection("properties").insertOne(propertyData);
 

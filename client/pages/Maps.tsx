@@ -15,6 +15,11 @@ export default function Maps() {
   const [loading, setLoading] = useState(true);
   const [activeArea, setActiveArea] = useState<string>("");
 
+  // Area filter dropdown state
+  const [areaOpen, setAreaOpen] = useState(false);
+  const [areaQuery, setAreaQuery] = useState("");
+  const areaWrapRef = useRef<HTMLDivElement | null>(null);
+
   // Lightbox / Modal state
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number>(0);
@@ -46,7 +51,6 @@ export default function Maps() {
     (idx: number) => {
       setViewerIndex(idx);
       setViewerOpen(true);
-      // reset any previous transforms
       resetTransform();
     },
     [resetTransform],
@@ -117,10 +121,52 @@ export default function Maps() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [items]);
 
+  // Filter areas by search
+  const filteredAreas = useMemo(() => {
+    const q = areaQuery.trim().toLowerCase();
+    if (!q) return areas;
+    return areas.filter((a) => a.toLowerCase().includes(q));
+  }, [areas, areaQuery]);
+
   // Safety: clamp viewerIndex if filter changes
   useEffect(() => {
     if (viewerIndex >= items.length) setViewerIndex(0);
   }, [items.length, viewerIndex]);
+
+  // Close dropdown on outside click + Esc
+  useEffect(() => {
+    if (!areaOpen) return;
+
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const wrap = areaWrapRef.current;
+      if (!wrap) return;
+      if (!wrap.contains(e.target as Node)) {
+        setAreaOpen(false);
+      }
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAreaOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown as any);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [areaOpen]);
+
+  const selectArea = useCallback((val: string) => {
+    setActiveArea(val);
+    setAreaOpen(false);
+    setAreaQuery("");
+  }, []);
+
+  const activeAreaLabel = activeArea ? activeArea : "All Areas";
 
   // ---------- Gesture helpers ----------
   function getTwoPointerDistance(
@@ -141,7 +187,6 @@ export default function Maps() {
     // Double-tap / double-click zoom toggle
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      // Double-tap zooms to 2x, double-tap again to reset to 1x
       const newScale = scale > 1.5 ? 1 : 2;
       setScale(newScale);
       setOffset({ x: 0, y: 0 });
@@ -158,7 +203,6 @@ export default function Maps() {
 
     const points = [...pointersRef.current.values()];
     if (points.length === 2) {
-      // Pinch - calculate scale with improved responsiveness
       const d = getTwoPointerDistance(points[0], points[1]);
       if (baseDistanceRef.current == null) {
         baseDistanceRef.current = d;
@@ -166,23 +210,19 @@ export default function Maps() {
         return;
       }
       const factor = d / (baseDistanceRef.current || d);
-      // Clamp to reasonable zoom range (1-4x for clarity at all zoom levels)
       let nextScale = clamp(baseScaleRef.current * factor, 1, 4);
       setScale(nextScale);
-      // Keep offset reasonable based on current scale
       const maxOffset = 3000 * (nextScale / 4);
       setOffset((prev) => ({
         x: clamp(prev.x, -maxOffset, maxOffset),
         y: clamp(prev.y, -maxOffset, maxOffset),
       }));
     } else if (points.length === 1) {
-      // Pan when zoomed
       if (scale > 1) {
         // @ts-ignore
         const movementX = e.movementX ?? 0;
         // @ts-ignore
         const movementY = e.movementY ?? 0;
-        // Dynamically adjust pan limits based on zoom level
         const maxPan = 3000 * (scale / 2);
         setOffset((o) => ({
           x: clamp(o.x + movementX, -maxPan, maxPan),
@@ -202,11 +242,9 @@ export default function Maps() {
   };
 
   const onWheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
-    // Block browser zoom on ctrl/cmd
     if (e.ctrlKey) {
       e.preventDefault();
     }
-    // Smooth zoom around cursor (desktop)
     const delta = e.deltaY;
     if (Math.abs(delta) > 0) {
       e.preventDefault();
@@ -222,7 +260,6 @@ export default function Maps() {
     const el = containerRef.current;
     if (!el) return;
     const prevent = (ev: TouchEvent) => {
-      // Always prevent default inside the modal container
       ev.preventDefault();
     };
     el.addEventListener("touchmove", prevent, { passive: false });
@@ -255,31 +292,108 @@ export default function Maps() {
           <h1 className="text-2xl font-bold">Maps</h1>
         </div>
 
+        {/* Professional Filter UI (Button + Dropdown) */}
         {areas.length > 0 && (
-          <div className="flex gap-2 flex-wrap mb-4">
-            <button
-              onClick={() => setActiveArea("")}
-              className={`px-3 py-1.5 rounded-full text-sm border ${
-                activeArea === ""
-                  ? "bg-[#C70000] text-white border-[#C70000]"
-                  : "bg-white text-gray-800 border-gray-200"
-              }`}
-            >
-              All
-            </button>
-            {areas.map((a) => (
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <div ref={areaWrapRef} className="relative">
               <button
-                key={a}
-                onClick={() => setActiveArea(a)}
-                className={`px-3 py-1.5 rounded-full text-sm border ${
-                  activeArea === a
-                    ? "bg-[#C70000] text-white border-[#C70000]"
-                    : "bg-white text-gray-800 border-gray-200"
-                }`}
+                type="button"
+                onClick={() => setAreaOpen((s) => !s)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 shadow-sm hover:bg-gray-50 active:scale-[0.99] transition"
+                aria-haspopup="listbox"
+                aria-expanded={areaOpen}
               >
-                {a}
+                <span className="text-sm font-medium">Filter Area</span>
+                <span className="text-sm text-gray-600 max-w-[52vw] sm:max-w-[340px] truncate">
+                  — {activeAreaLabel}
+                </span>
+                <span className="ml-1 text-gray-500">{areaOpen ? "▲" : "▼"}</span>
               </button>
-            ))}
+
+              {areaOpen && (
+                <div
+                  className="absolute z-30 mt-2 w-[92vw] sm:w-[420px] max-w-[92vw] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden"
+                  role="dialog"
+                  aria-label="Select area filter"
+                >
+                  <div className="p-3 border-b border-gray-100">
+                    <input
+                      value={areaQuery}
+                      onChange={(e) => setAreaQuery(e.target.value)}
+                      placeholder="Search area..."
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C70000]/30"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div
+                    className="max-h-[45vh] overflow-auto p-2"
+                    role="listbox"
+                    aria-label="Area options"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => selectArea("")}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                        activeArea === ""
+                          ? "bg-[#C70000] text-white"
+                          : "hover:bg-gray-50 text-gray-800"
+                      }`}
+                      role="option"
+                      aria-selected={activeArea === ""}
+                    >
+                      All
+                    </button>
+
+                    {filteredAreas.length === 0 && (
+                      <div className="px-3 py-3 text-sm text-gray-600">
+                        No matching area found.
+                      </div>
+                    )}
+
+                    {filteredAreas.map((a) => (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => selectArea(a)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                          activeArea === a
+                            ? "bg-[#C70000] text-white"
+                            : "hover:bg-gray-50 text-gray-800"
+                        }`}
+                        role="option"
+                        aria-selected={activeArea === a}
+                        title={a}
+                      >
+                        <span className="block truncate">{a}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="p-2 border-t border-gray-100 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAreaOpen(false);
+                        setAreaQuery("");
+                      }}
+                      className="px-3 py-2 text-sm rounded-lg hover:bg-gray-50 text-gray-700"
+                    >
+                      Close
+                    </button>
+
+                    <div className="text-xs text-gray-500 px-2">
+                      {items.length} item(s)
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Small hint badge (optional) */}
+            <div className="text-xs text-gray-500">
+              Tip: search and select to filter maps
+            </div>
           </div>
         )}
 
@@ -337,8 +451,6 @@ export default function Maps() {
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
-            // Only close if clicking on the backdrop (not zoomed in)
-            // Prevent closing if user has zoomed in (scale > 1)
             if (e.target === e.currentTarget && scale <= 1) closeViewer();
           }}
         >
@@ -346,7 +458,6 @@ export default function Maps() {
           <button
             type="button"
             onClick={() => {
-              // If zoomed in, reset zoom first before closing
               if (scale > 1) {
                 resetTransform();
               } else {
