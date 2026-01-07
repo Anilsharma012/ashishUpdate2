@@ -160,6 +160,25 @@ function CompletePropertyManagement() {
 
   const [customAmenity, setCustomAmenity] = useState("");
 
+  // Dynamic categories state
+  const [categories, setCategories] = useState<Array<{
+    _id?: string;
+    name: string;
+    slug: string;
+    subcategories?: Array<{ _id?: string; name: string; slug: string }>;
+  }>>([]);
+  const [subcategories, setSubcategories] = useState<Array<{
+    _id?: string;
+    name: string;
+    slug: string;
+  }>>([]);
+  const [miniSubcategories, setMiniSubcategories] = useState<Array<{
+    _id?: string;
+    name: string;
+    slug: string;
+  }>>([]);
+  const [catLoading, setCatLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -167,6 +186,10 @@ function CompletePropertyManagement() {
     priceType: "sale" as "sale" | "rent",
     propertyType: "residential",
     subCategory: "1bhk",
+    categoryId: "",
+    subcategoryId: "",
+    miniSubcategoryId: "",
+    showContactInfo: false,
     location: {
       city: "Rohtak",
       state: "Haryana",
@@ -211,6 +234,89 @@ function CompletePropertyManagement() {
     selectedPromotion,
     selectedApproval,
   ]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCatLoading(true);
+        const endpoints = [
+          "/api/categories?withSub=true&type=property",
+          "/api/categories?withSub=true",
+          "/api/categories",
+        ];
+        for (const url of endpoints) {
+          try {
+            const res = await fetch(url, { credentials: "include" });
+            if (!res.ok) continue;
+            const json = await res.json();
+            const arr = Array.isArray(json) ? json : json?.data;
+            if (!Array.isArray(arr) || !arr.length) continue;
+            const excludeSlugs = new Set(["new-projects", "maps", "other-services", "services"]);
+            const filtered = arr.filter((c: any) => {
+              const slug = String(c?.slug || "").toLowerCase();
+              const name = String(c?.name || "").toLowerCase();
+              if (excludeSlugs.has(slug)) return false;
+              if (name.includes("project") || name.includes("map") || name.includes("service")) return false;
+              return c?.isActive !== false && c?.active !== false;
+            });
+            setCategories(filtered);
+            break;
+          } catch { /* try next */ }
+        }
+      } catch (e) {
+        console.error("Error fetching categories:", e);
+      } finally {
+        setCatLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Handle category change - update subcategories
+  const handleCategoryChange = (categoryId: string) => {
+    const cat = categories.find(c => c._id === categoryId || c.slug === categoryId);
+    setFormData(prev => ({
+      ...prev,
+      categoryId,
+      propertyType: cat?.slug || "",
+      subcategoryId: "",
+      subCategory: "",
+      miniSubcategoryId: "",
+    }));
+    setMiniSubcategories([]);
+    if (cat?.subcategories) {
+      setSubcategories(cat.subcategories);
+    } else {
+      setSubcategories([]);
+    }
+  };
+
+  // Handle subcategory change - fetch mini-subcategories
+  const handleSubcategoryChange = async (subcategoryId: string) => {
+    const sub = subcategories.find(s => s._id === subcategoryId || s.slug === subcategoryId);
+    setFormData(prev => ({
+      ...prev,
+      subcategoryId,
+      subCategory: sub?.slug || "",
+      miniSubcategoryId: "",
+    }));
+    setMiniSubcategories([]);
+    if (subcategoryId) {
+      try {
+        const res = await fetch(`/api/mini-subcategories/by-subcategory/${subcategoryId}`);
+        if (res.ok) {
+          const json = await res.json();
+          const minis = json?.data || json || [];
+          if (Array.isArray(minis) && minis.length > 0) {
+            setMiniSubcategories(minis.filter((m: any) => m?.isActive !== false && m?.active !== false));
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching mini-subcategories:", e);
+      }
+    }
+  };
 
   // Build local preview URLs for selected images
   useEffect(() => {
@@ -348,6 +454,7 @@ const addCustomAmenity = () => {
   formDataObj.append("isAdminPosted", "true");
     formDataObj.append("ownerRole", "admin");
     formDataObj.append("source", "admin-panel");
+    formDataObj.append("contactVisible", String(formData.showContactInfo));
 
 
 
@@ -416,6 +523,7 @@ const addCustomAmenity = () => {
           formDataObj.append("isAdminPosted", "true");
     formDataObj.append("ownerRole", "admin");
     formDataObj.append("source", "admin-panel");
+    formDataObj.append("contactVisible", String(formData.showContactInfo));
 
 
       if (selectedImages && Array.isArray(selectedImages)) {
@@ -651,6 +759,10 @@ const addCustomAmenity = () => {
       priceType: "sale",
       propertyType: "residential",
       subCategory: "1bhk",
+      categoryId: "",
+      subcategoryId: "",
+      miniSubcategoryId: "",
+      showContactInfo: false,
       location: {
         city: "Rohtak",
         state: "Haryana",
@@ -682,11 +794,18 @@ const addCustomAmenity = () => {
       status: "active",
     });
     setSelectedImages([]);
+    setSubcategories([]);
+    setMiniSubcategories([]);
   };
 
-  const populateForm = (property: Property) => {
+  const populateForm = async (property: Property) => {
     // When switching to edit, keep newly selected images empty
     setSelectedImages([]);
+    
+    const categoryId = (property as any).categoryId || "";
+    const subcategoryId = (property as any).subcategoryId || "";
+    const miniSubcategoryId = (property as any).miniSubcategoryId || "";
+    
     setFormData({
       title: property.title,
       description: property.description,
@@ -694,6 +813,10 @@ const addCustomAmenity = () => {
       priceType: property.priceType,
       propertyType: property.propertyType,
       subCategory: property.subCategory,
+      categoryId,
+      subcategoryId,
+      miniSubcategoryId,
+      showContactInfo: (property as any).showContactInfo || (property as any).contactVisible || false,
       location: {
         city: property.location.city,
         state: property.location.state,
@@ -733,6 +856,27 @@ const addCustomAmenity = () => {
       promotionType: property.promotionType,
       status: property.status,
     });
+    
+    // Load subcategories if category is set
+    if (categoryId) {
+      try {
+        const { api } = await import("../../lib/api");
+        const subRes = await api.get(`subcategories?categoryId=${categoryId}&active=true`);
+        if (subRes.data.success && subRes.data.data) {
+          setSubcategories(subRes.data.data);
+          
+          // Load mini-subcategories if subcategory is set
+          if (subcategoryId) {
+            const miniRes = await api.get(`mini-subcategories?subcategoryId=${subcategoryId}&active=true`);
+            if (miniRes.data.success && miniRes.data.data) {
+              setMiniSubcategories(miniRes.data.data);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading category data for edit:", error);
+      }
+    }
   };
 
   const getStatusBadge = (status: string | null | undefined) => {
@@ -1390,48 +1534,73 @@ const addCustomAmenity = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Property Type
+                  Category (Buy/Rent/PG) *
                 </label>
                 <Select
-                  value={formData.propertyType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, propertyType: value })
-                  }
+                  value={formData.categoryId}
+                  onValueChange={handleCategoryChange}
+                  disabled={catLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder={catLoading ? "Loading..." : "Select Category"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="residential">Residential</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
-                    <SelectItem value="plot">Plot/Land</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat._id || cat.slug} value={cat._id || cat.slug}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Sub Category
-              </label>
-              <Select
-                value={formData.subCategory}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, subCategory: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1bhk">1 BHK</SelectItem>
-                  <SelectItem value="2bhk">2 BHK</SelectItem>
-                  <SelectItem value="3bhk">3 BHK</SelectItem>
-                  <SelectItem value="4bhk">4 BHK</SelectItem>
-                  <SelectItem value="villa">Villa</SelectItem>
-                  <SelectItem value="plot">Plot</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Sub Category *
+                </label>
+                <Select
+                  value={formData.subcategoryId}
+                  onValueChange={handleSubcategoryChange}
+                  disabled={!formData.categoryId || subcategories.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formData.categoryId ? "Select category first" : "Select Subcategory"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subcategories.map((sub) => (
+                      <SelectItem key={sub._id || sub.slug} value={sub._id || sub.slug}>
+                        {sub.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {miniSubcategories.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Mini Category (Optional)
+                  </label>
+                  <Select
+                    value={formData.miniSubcategoryId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, miniSubcategoryId: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Mini Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {miniSubcategories.map((mini) => (
+                        <SelectItem key={mini._id || mini.slug} value={mini._id || mini.slug}>
+                          {mini.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div>
@@ -1502,6 +1671,23 @@ const addCustomAmenity = () => {
                         email: e.target.value,
                       },
                     })
+                  }
+                />
+              </div>
+              <div className="col-span-2 flex items-center justify-between rounded-lg border p-3 mt-2">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-blue-600" />
+                    Show Contact Info
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Display contact details publicly on the property listing (Default: Off)
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.showContactInfo}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, showContactInfo: checked })
                   }
                 />
               </div>
@@ -1998,48 +2184,73 @@ const addCustomAmenity = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Property Type
+                  Category (Buy/Rent/PG) *
                 </label>
                 <Select
-                  value={formData.propertyType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, propertyType: value })
-                  }
+                  value={formData.categoryId}
+                  onValueChange={handleCategoryChange}
+                  disabled={catLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder={catLoading ? "Loading..." : "Select Category"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="residential">Residential</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
-                    <SelectItem value="plot">Plot/Land</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat._id || cat.slug} value={cat._id || cat.slug}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Sub Category
-              </label>
-              <Select
-                value={formData.subCategory}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, subCategory: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1bhk">1 BHK</SelectItem>
-                  <SelectItem value="2bhk">2 BHK</SelectItem>
-                  <SelectItem value="3bhk">3 BHK</SelectItem>
-                  <SelectItem value="4bhk">4 BHK</SelectItem>
-                  <SelectItem value="villa">Villa</SelectItem>
-                  <SelectItem value="plot">Plot</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Sub Category *
+                </label>
+                <Select
+                  value={formData.subcategoryId}
+                  onValueChange={handleSubcategoryChange}
+                  disabled={!formData.categoryId || subcategories.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formData.categoryId ? "Select category first" : "Select Subcategory"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subcategories.map((sub) => (
+                      <SelectItem key={sub._id || sub.slug} value={sub._id || sub.slug}>
+                        {sub.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {miniSubcategories.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Mini Category (Optional)
+                  </label>
+                  <Select
+                    value={formData.miniSubcategoryId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, miniSubcategoryId: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Mini Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {miniSubcategories.map((mini) => (
+                        <SelectItem key={mini._id || mini.slug} value={mini._id || mini.slug}>
+                          {mini.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div>
@@ -2110,6 +2321,23 @@ const addCustomAmenity = () => {
                         email: e.target.value,
                       },
                     })
+                  }
+                />
+              </div>
+              <div className="col-span-2 flex items-center justify-between rounded-lg border p-3 mt-2">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-blue-600" />
+                    Show Contact Info
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Display contact details publicly on the property listing (Default: Off)
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.showContactInfo}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, showContactInfo: checked })
                   }
                 />
               </div>
