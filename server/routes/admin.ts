@@ -979,6 +979,27 @@ export const createProperty: RequestHandler = async (req, res) => {
         ? JSON.parse(req.body.contactInfo)
         : req.body.contactInfo;
 
+    const specifications =
+      typeof req.body.specifications === "string"
+        ? JSON.parse(req.body.specifications)
+        : req.body.specifications;
+
+    const amenities =
+      typeof req.body.amenities === "string"
+        ? JSON.parse(req.body.amenities)
+        : req.body.amenities;
+
+    const featured =
+      req.body.featured === "true" || (req.body.featured as any) === true;
+
+    const premium =
+      req.body.premium === "true" || (req.body.premium as any) === true;
+
+    const promotionType = req.body.promotionType || "free";
+
+    const contactVisible =
+      req.body.contactVisible === "true" || (req.body.contactVisible as any) === true;
+
     const propertyData = {
   title: req.body.title,
   description: req.body.description,
@@ -986,6 +1007,9 @@ export const createProperty: RequestHandler = async (req, res) => {
   priceType: req.body.priceType,
   propertyType: req.body.propertyType,
   subCategory: req.body.subCategory,
+  categoryId: req.body.categoryId || "",
+  subcategoryId: req.body.subcategoryId || "",
+  miniSubcategoryId: req.body.miniSubcategoryId || "",
   location,
   specifications: {
     bedrooms: specifications?.bedrooms ?? "",
@@ -1001,13 +1025,16 @@ export const createProperty: RequestHandler = async (req, res) => {
   amenities: Array.isArray(amenities) ? amenities : [],
   ownerId: "admin",
   ownerType: "admin",
+  ownerRole: req.body.ownerRole || "admin",
+  isAdminPosted: req.body.isAdminPosted === "true" || (req.body.isAdminPosted as any) === true,
+  source: req.body.source || "admin-panel",
   contactInfo,
   status: req.body.status || "active",
-  approvalStatus: "approved", // Admin added properties are auto-approved
+  approvalStatus: "approved",
   featured: featured ?? false,
   premium: premium ?? false,
   promotionType,
-  contactVisible: true,
+  contactVisible: contactVisible,
   views: 0,
   inquiries: 0,
   phoneClicks: 0,
