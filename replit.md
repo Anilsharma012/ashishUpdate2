@@ -2,6 +2,25 @@
 
 A production-ready full-stack property management application built with React and Express, designed for property listings, chat functionality, and comprehensive user management. The platform supports buyers, sellers, agents, and administrators with role-based access control, real-time messaging, and advanced property search capabilities.
 
+## Recent Changes (January 2026)
+
+### Boost Up Feature System (January 21, 2026)
+- Implemented complete "Boost Up" feature for property listings to increase visibility
+- Admin can create/edit/delete boost plans with custom pricing, duration, and features
+- 2 default boost plans auto-created: 24-hour (₹99) and 48-hour (₹149)
+- User dashboard includes Boost/Premium buttons on each property in "All Properties" section
+- Boost modal displays available plans with pricing, duration, and features
+- Applied boosts tracked with start/end times for automatic expiration
+- Boosted properties appear prominently in homepage featured section (priority over regular premium)
+- API endpoints:
+  - `GET /api/boost-plans` - List all boost plans (public)
+  - `POST /api/boost-plans` - Create boost plan (admin only)
+  - `PUT /api/boost-plans/:id` - Update boost plan (admin only)
+  - `DELETE /api/boost-plans/:id` - Delete boost plan (admin only)
+  - `POST /api/boost/apply` - Apply boost to property (authenticated)
+  - `GET /api/properties/boosted` - Get active boosted properties (public)
+- Key files: server/routes/boost-plans.ts, client/components/admin/BoostPlanManagement.tsx, client/pages/UserDashboard.tsx, client/components/PropertyAdsSlider.tsx
+
 ## Recent Changes (December 2025)
 
 ### FCM Push Notifications (December 22, 2025)
