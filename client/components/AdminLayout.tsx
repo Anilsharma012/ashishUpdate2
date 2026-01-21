@@ -109,6 +109,11 @@ const menuItems: MenuItem[] = [
         label: "Feature Advertisement Package",
         icon: Star,
       },
+      {
+        id: "boost-plans",
+        label: "Boost Up Plans",
+        icon: Activity,
+      },
     ],
   },
   {

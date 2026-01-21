@@ -58,6 +58,11 @@ export interface Property {
   shareContactInfo?: boolean; // Legacy field - use contactVisible instead
   packageId?: string; // Advertisement package
   packageExpiry?: Date;
+  boosted?: boolean; // Is this a boosted listing
+  boostPlanId?: string; // Boost plan ID
+  boostStartTime?: Date; // When boost started
+  boostEndTime?: Date; // When boost expires
+  boostApprovalStatus?: "pending" | "approved" | "rejected"; // Boost approval status
   views: number;
   inquiries: number;
   isDeleted?: boolean;
@@ -347,6 +352,20 @@ export interface PropertyAnalytics {
   favorites: number;
   phoneClicks: number;
   lastViewed: Date;
+}
+
+// Boost Plan Types
+export interface BoostPlan {
+  _id?: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number; // in hours (e.g., 24, 48)
+  features: string[];
+  active: boolean;
+  sortOrder?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Rohtak Areas

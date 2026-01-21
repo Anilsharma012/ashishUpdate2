@@ -24,9 +24,30 @@ import {
   Bell,
   Clock,
   CheckCircle,
+  Search,
+  Zap,
+  Crown,
+  X,
 } from "lucide-react";
+import { Input } from "../components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import OLXStyleHeader from "../components/OLXStyleHeader";
 import BottomNavigation from "../components/BottomNavigation";
+
+interface BoostPlan {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  features: string[];
+  active: boolean;
+}
 
 interface Notification {
   _id: string;
@@ -56,6 +77,10 @@ const UserDashboard = () => {
     totalInquiries: 0,
     unreadNotifications: 0,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [boostPlans, setBoostPlans] = useState<BoostPlan[]>([]);
+  const [boostModalOpen, setBoostModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -63,7 +88,50 @@ const UserDashboard = () => {
       return;
     }
     fetchUserData();
+    fetchBoostPlans();
   }, [user]);
+
+  const fetchBoostPlans = async () => {
+    try {
+      const res = await api.get("/boost-plans?active=true");
+      if (res.data.success) {
+        setBoostPlans(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching boost plans:", error);
+    }
+  };
+
+  const handleBoostProperty = (property: Property) => {
+    setSelectedProperty(property);
+    setBoostModalOpen(true);
+  };
+
+  const applyBoost = async (planId: string) => {
+    if (!selectedProperty) return;
+    
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.post("/boost/apply", {
+        propertyId: selectedProperty._id,
+        boostPlanId: planId,
+      }, token);
+      
+      if (res.data.success) {
+        alert("Boost applied successfully!");
+        setBoostModalOpen(false);
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error("Error applying boost:", error);
+      alert("Failed to apply boost. Please try again.");
+    }
+  };
+
+  const filteredProperties = properties.filter((p) =>
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.location?.address?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const fetchUserData = async () => {
     try {
@@ -569,14 +637,53 @@ const UserDashboard = () => {
 
         {/* My Properties Section */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Home className="h-5 w-5" />
-              My Listings
-            </CardTitle>
+          <CardHeader className="pb-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <Home className="h-5 w-5" />
+                All Properties
+                <span className="text-sm font-normal text-gray-500">
+                  ({filteredProperties.length} of {properties.length})
+                </span>
+              </CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by title or address..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 w-48 md:w-64"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                  onClick={() => setBoostModalOpen(true)}
+                >
+                  <Zap className="h-4 w-4 mr-1" />
+                  Boost Ups
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                >
+                  <Crown className="h-4 w-4 mr-1" />
+                  Premium
+                </Button>
+                <Button asChild size="sm" className="bg-[#C70000] hover:bg-[#A50000]">
+                  <Link to="/post-property">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add New Property
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {properties.length === 0 ? (
+            {filteredProperties.length === 0 ? (
               <div className="text-center py-12">
                 <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -594,7 +701,7 @@ const UserDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {properties.map((property) => (
+                {filteredProperties.map((property) => (
                   <div
                     key={property._id}
                     className="border rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -626,6 +733,12 @@ const UserDashboard = () => {
                               property.approvalStatus || "pending",
                             )}
                             {getPremiumBadge(property)}
+                            {property.boosted && property.boostEndTime && new Date(property.boostEndTime) > new Date() && (
+                              <Badge className="bg-yellow-500 text-white">
+                                <Zap className="h-3 w-3 mr-1" />
+                                Boosted
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -647,6 +760,31 @@ const UserDashboard = () => {
                             {property.inquiries} inquiries
                           </span>
                           <span>{property.location.address}</span>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {property.approvalStatus === "approved" && !property.boosted && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleBoostProperty(property)}
+                              className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                            >
+                              <Zap className="h-3 w-3 mr-1" />
+                              Boost
+                            </Button>
+                          )}
+                          {property.approvalStatus === "approved" && !property.premium && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                            >
+                              <Crown className="h-3 w-3 mr-1" />
+                              Premium
+                            </Button>
+                          )}
                         </div>
 
                         {/* Rejection Reason */}
@@ -734,6 +872,56 @@ const UserDashboard = () => {
       </div>
 
       <BottomNavigation />
+
+      {/* Boost Plans Modal */}
+      <Dialog open={boostModalOpen} onOpenChange={setBoostModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              {selectedProperty ? `Boost: ${selectedProperty.title}` : "Available Boost Plans"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {boostPlans.map((plan) => (
+              <Card key={plan._id} className="border-2 hover:border-yellow-500 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-5 w-5 text-yellow-500" />
+                    <h3 className="font-semibold">{plan.name}</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-[#C70000]">₹{plan.price}</span>
+                    <span className="text-sm text-gray-500">{plan.duration} hours</span>
+                  </div>
+                  <ul className="text-sm space-y-1 mb-4">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                    onClick={() => selectedProperty ? applyBoost(plan._id) : setBoostModalOpen(false)}
+                    disabled={!selectedProperty}
+                  >
+                    {selectedProperty ? "Apply Boost" : "Select a property first"}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {boostPlans.length === 0 && (
+            <div className="text-center py-8">
+              <Zap className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No boost plans available yet</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

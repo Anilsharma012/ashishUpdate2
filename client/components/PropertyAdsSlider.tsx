@@ -78,36 +78,75 @@ const PropertyAdsSlider: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
-        const res = await (window as any).api(
-          "/properties?premium=true&status=active&limit=20",
-          { timeout: 10000 },
-        );
-        if (res?.ok && res.json?.success) {
-          const rawData = res.json.data?.properties || res.json.data || [];
+        
+        // Fetch both premium and boosted properties
+        const [premiumRes, boostedRes] = await Promise.all([
+          (window as any).api("/properties?premium=true&status=active&limit=20", { timeout: 10000 }),
+          (window as any).api("/properties/boosted", { timeout: 10000 }),
+        ]);
+        
+        const allProperties: PremiumProperty[] = [];
+        const seenIds = new Set<string>();
+        
+        // Process premium properties
+        if (premiumRes?.ok && premiumRes.json?.success) {
+          const rawData = premiumRes.json.data?.properties || premiumRes.json.data || [];
           const dataArray = Array.isArray(rawData) ? rawData : [];
-          const premiumProps: PremiumProperty[] = dataArray
-            .filter((p: any) => p.premium === true || p.featured === true)
-            .map((p: any) => ({
-              _id: p._id,
-              title: p.title || "Premium Property",
-              price: p.price || 0,
-              priceType: p.priceType,
-              propertyType: p.propertyType,
-              images: Array.isArray(p.images) ? p.images : [],
-              location: p.location || {},
-              bedrooms: p.bedrooms,
-              bathrooms: p.bathrooms,
-              area: p.area,
-              areaUnit: p.areaUnit || "sq.ft",
-              premium: p.premium,
-              featured: p.featured,
-            }));
-          setProperties(premiumProps);
-        } else {
-          setProperties([]);
+          dataArray.filter((p: any) => p.premium === true || p.featured === true)
+            .forEach((p: any) => {
+              if (!seenIds.has(p._id)) {
+                seenIds.add(p._id);
+                allProperties.push({
+                  _id: p._id,
+                  title: p.title || "Premium Property",
+                  price: p.price || 0,
+                  priceType: p.priceType,
+                  propertyType: p.propertyType,
+                  images: Array.isArray(p.images) ? p.images : [],
+                  location: p.location || {},
+                  bedrooms: p.bedrooms,
+                  bathrooms: p.bathrooms,
+                  area: p.area,
+                  areaUnit: p.areaUnit || "sq.ft",
+                  premium: p.premium,
+                  featured: p.featured,
+                });
+              }
+            });
         }
+        
+        // Process boosted properties (add at the beginning for priority)
+        if (boostedRes?.ok && boostedRes.json?.success) {
+          const boostedData = boostedRes.json.data || [];
+          const boostedArray = Array.isArray(boostedData) ? boostedData : [];
+          const boostedProps: PremiumProperty[] = [];
+          boostedArray.forEach((p: any) => {
+            if (!seenIds.has(p._id)) {
+              seenIds.add(p._id);
+              boostedProps.push({
+                _id: p._id,
+                title: p.title || "Boosted Property",
+                price: p.price || 0,
+                priceType: p.priceType,
+                propertyType: p.propertyType,
+                images: Array.isArray(p.images) ? p.images : [],
+                location: p.location || {},
+                bedrooms: p.bedrooms,
+                bathrooms: p.bathrooms,
+                area: p.area,
+                areaUnit: p.areaUnit || "sq.ft",
+                premium: p.premium,
+                featured: true, // Boosted properties are featured
+              });
+            }
+          });
+          // Add boosted at beginning for priority
+          allProperties.unshift(...boostedProps);
+        }
+        
+        setProperties(allProperties);
       } catch (e) {
-        console.warn("Premium properties fetch failed:", e);
+        console.warn("Featured properties fetch failed:", e);
         setProperties([]);
       } finally {
         setLoading(false);

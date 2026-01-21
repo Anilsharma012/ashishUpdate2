@@ -279,6 +279,16 @@ import {
   initializePackages,
 } from "./routes/packages";
 
+// Boost Plan routes
+import {
+  getBoostPlans,
+  createBoostPlan,
+  updateBoostPlan,
+  deleteBoostPlan,
+  applyBoost,
+  getBoostedProperties,
+} from "./routes/boost-plans";
+
 // Payment routes
 import {
   createTransaction,
@@ -882,6 +892,7 @@ export function createServer() {
   // Property routes
   app.get("/api/properties", getProperties);
   app.get("/api/properties/featured", getFeaturedProperties);
+  app.get("/api/properties/boosted", getBoostedProperties);
   app.get("/api/properties/:id", getPropertyById);
   app.post(
     "/api/properties",
@@ -1523,6 +1534,13 @@ export function createServer() {
 
   // Plans route (alias for packages as requested by user)
   app.get("/api/plans", getAdPackages);
+
+  // Boost Plan routes
+  app.get("/api/boost-plans", getBoostPlans);
+  app.post("/api/boost-plans", authenticateToken, requireAdmin, createBoostPlan);
+  app.put("/api/boost-plans/:id", authenticateToken, requireAdmin, updateBoostPlan);
+  app.delete("/api/boost-plans/:id", authenticateToken, requireAdmin, deleteBoostPlan);
+  app.post("/api/boost/apply", authenticateToken, applyBoost);
 
   // Coupon routes
   app.get("/api/admin/coupons", authenticateToken, requireAdmin, getAllCoupons);
