@@ -79,6 +79,7 @@ import {
   DollarSign,
   BarChart3,
   Users,
+  Zap,
 } from "lucide-react";
 import OLXStyleHeader from "../components/OLXStyleHeader";
 import BottomNavigation from "../components/BottomNavigation";
@@ -124,6 +125,53 @@ export default function MyProperties() {
     totalViews: 0,
     totalInquiries: 0,
   });
+
+  // Boost state
+  const [boostModalOpen, setBoostModalOpen] = useState(false);
+  const [boostPlans, setBoostPlans] = useState<any[]>([]);
+  const [selectedBoostProperty, setSelectedBoostProperty] = useState<Property | null>(null);
+
+  // Fetch boost plans
+  const fetchBoostPlans = async () => {
+    try {
+      const res = await api.get("boost-plans?active=true");
+      if (res.json?.success) {
+        setBoostPlans(res.json.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch boost plans:", error);
+    }
+  };
+
+  // Apply boost to property
+  const applyBoost = async (planId: string) => {
+    if (!selectedBoostProperty) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.post("boost/apply", {
+        propertyId: selectedBoostProperty._id,
+        boostPlanId: planId,
+      }, token || "");
+      if (res.json?.success) {
+        alert("Boost applied successfully!");
+        setBoostModalOpen(false);
+        setSelectedBoostProperty(null);
+        fetchProperties();
+      } else {
+        alert(res.json?.error || "Failed to apply boost");
+      }
+    } catch (error) {
+      console.error("Failed to apply boost:", error);
+      alert("Failed to apply boost. Please try again.");
+    }
+  };
+
+  // Open boost modal for a property
+  const openBoostModal = (property: Property) => {
+    setSelectedBoostProperty(property);
+    fetchBoostPlans();
+    setBoostModalOpen(true);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -759,6 +807,16 @@ export default function MyProperties() {
                                 </DropdownMenuItem>
                               )}
 
+                              {property.approvalStatus === "approved" && !property.boosted && (
+                                <DropdownMenuItem
+                                  onClick={() => openBoostModal(property)}
+                                  className="text-yellow-600"
+                                >
+                                  <Zap className="h-4 w-4 mr-2" />
+                                  Boost Property
+                                </DropdownMenuItem>
+                              )}
+
                               <DropdownMenuItem
                                 onClick={() =>
                                   togglePropertyStatus(
@@ -951,6 +1009,55 @@ export default function MyProperties() {
       </div>
 
       <BottomNavigation />
+
+      {/* Boost Plans Modal */}
+      <Dialog open={boostModalOpen} onOpenChange={setBoostModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              {selectedBoostProperty ? `Boost: ${selectedBoostProperty.title}` : "Available Boost Plans"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {boostPlans.map((plan) => (
+              <Card key={plan._id} className="border-2 hover:border-yellow-500 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-5 w-5 text-yellow-500" />
+                    <h3 className="font-semibold">{plan.name}</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-[#C70000]">₹{plan.price}</span>
+                    <span className="text-sm text-gray-500">{plan.duration} hours</span>
+                  </div>
+                  <ul className="text-sm space-y-1 mb-4">
+                    {plan.features?.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                    onClick={() => applyBoost(plan._id)}
+                  >
+                    Apply Boost
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {boostPlans.length === 0 && (
+            <div className="text-center py-8">
+              <Zap className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No boost plans available yet</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
