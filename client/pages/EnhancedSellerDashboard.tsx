@@ -188,6 +188,53 @@ export default function EnhancedSellerDashboard() {
   // Contact sharing preference
   const [shareContactPreference, setShareContactPreference] = useState(true);
 
+  // Boost modal state
+  const [boostModalOpen, setBoostModalOpen] = useState(false);
+  const [boostPlans, setBoostPlans] = useState<any[]>([]);
+  const [selectedBoostProperty, setSelectedBoostProperty] = useState<Property | null>(null);
+
+  // Fetch boost plans
+  const fetchBoostPlans = async () => {
+    try {
+      const res = await api.get("boost-plans?active=true");
+      if (res.data?.success) {
+        setBoostPlans(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch boost plans:", error);
+    }
+  };
+
+  // Apply boost to property
+  const applyBoost = async (planId: string) => {
+    if (!selectedBoostProperty) return;
+    try {
+      const token = await getAuthToken();
+      const res = await api.post("boost/apply", {
+        propertyId: selectedBoostProperty._id,
+        boostPlanId: planId,
+      }, token || "");
+      if (res.data?.success) {
+        toast.success("Boost applied successfully!");
+        setBoostModalOpen(false);
+        setSelectedBoostProperty(null);
+        fetchDashboardData(false);
+      } else {
+        toast.error(res.data?.error || "Failed to apply boost");
+      }
+    } catch (error) {
+      console.error("Failed to apply boost:", error);
+      toast.error("Failed to apply boost. Please try again.");
+    }
+  };
+
+  // Open boost modal for a property
+  const openBoostModal = (property: Property) => {
+    setSelectedBoostProperty(property);
+    fetchBoostPlans();
+    setBoostModalOpen(true);
+  };
+
   const openReplyModal = (m: Message) => {
     setReplyTarget(m);
     setReplyText(`Hi ${m.buyerName}, regarding ${m.propertyTitle}.`);
@@ -961,6 +1008,15 @@ export default function EnhancedSellerDashboard() {
                   >
                     <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                   </Button>
+
+                  <Link to="/packages">
+                    <Button
+                      variant="outline"
+                      className="w-full bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-700"
+                    >
+                      <Zap className="h-4 w-4 mr-2" /> Premium Plans
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -1319,6 +1375,35 @@ export default function EnhancedSellerDashboard() {
                                   >
                                     Resubmit
                                   </Button>
+                                )}
+                                {property.approvalStatus === "approved" && !property.boosted ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-700"
+                                    onClick={() => openBoostModal(property)}
+                                    title="Boost this property for more visibility"
+                                  >
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    Boost
+                                  </Button>
+                                ) : property.approvalStatus !== "approved" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="opacity-50 cursor-not-allowed"
+                                    disabled
+                                    title="Property must be approved before boosting"
+                                  >
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    Boost
+                                  </Button>
+                                )}
+                                {property.boosted && (
+                                  <Badge className="ml-1 bg-yellow-100 text-yellow-800">
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    Boosted
+                                  </Badge>
                                 )}
                                 {property.isPremium && (
                                   <Badge className="ml-1 bg-amber-100 text-amber-800">
@@ -1954,6 +2039,55 @@ export default function EnhancedSellerDashboard() {
               Yes, Logout
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Boost Plans Modal */}
+      <Dialog open={boostModalOpen} onOpenChange={setBoostModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              {selectedBoostProperty ? `Boost: ${selectedBoostProperty.title}` : "Available Boost Plans"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {boostPlans.map((plan) => (
+              <Card key={plan._id} className="border-2 hover:border-yellow-500 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-5 w-5 text-yellow-500" />
+                    <h3 className="font-semibold">{plan.name}</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-[#C70000]">₹{plan.price}</span>
+                    <span className="text-sm text-gray-500">{plan.duration} hours</span>
+                  </div>
+                  <ul className="text-sm space-y-1 mb-4">
+                    {plan.features?.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                    onClick={() => applyBoost(plan._id)}
+                  >
+                    Buy & Apply
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {boostPlans.length === 0 && (
+            <div className="text-center py-8">
+              <Zap className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No boost plans available yet</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
