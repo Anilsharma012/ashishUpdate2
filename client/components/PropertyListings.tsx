@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Heart, MapPin, Phone, Calendar, Send } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Heart, MapPin, Phone, Calendar, Send, Zap, Crown } from "lucide-react";
 import { Button } from "./ui/button";
 import Watermark from "./Watermark";
 import EnquiryModal from "./EnquiryModal";
@@ -13,6 +13,7 @@ type AnyProp = {
   timeAgo: string;
   premium?: boolean;
   isPremium?: boolean;
+  boosted?: boolean;
   isAdminPosted?: boolean;
   plan?: string;
   postedBy?: { role?: string };
@@ -21,61 +22,33 @@ type AnyProp = {
   source?: string;
 };
 
-const featuredProperties: AnyProp[] = [
-  {
-    id: 1,
-    title: "3 BHK Luxury Apartment",
-    location: "Sector 12, Rohtak",
-    price: "₹85 Lakh",
-    image: "/placeholder.svg",
-    timeAgo: "2 hours ago",
-    premium: true,
-  },
-  {
-    id: 2,
-    title: "Commercial Shop in Main Market",
-    location: "Sector 4, Rohtak",
-    price: "₹1.2 Crore",
-    image: "/placeholder.svg",
-    timeAgo: "5 hours ago",
-  },
-];
+const formatPrice = (price: number, priceType?: string): string => {
+  let formatted = "";
+  if (price >= 10000000) {
+    formatted = `₹${(price / 10000000).toFixed(2)} Cr`;
+  } else if (price >= 100000) {
+    formatted = `₹${(price / 100000).toFixed(2)} Lac`;
+  } else if (price >= 1000) {
+    formatted = `₹${(price / 1000).toFixed(1)}K`;
+  } else {
+    formatted = `₹${price}`;
+  }
+  if (priceType === "rent") formatted += "/month";
+  return formatted;
+};
 
-const freshRecommendations: AnyProp[] = [
-  {
-    id: 3,
-    title: "2 BHK Builder Floor",
-    location: "Sector 15, Rohtak",
-    price: "₹65 Lakh",
-    image: "/placeholder.svg",
-    timeAgo: "1 day ago",
-  },
-  {
-    id: 4,
-    title: "Independent House with Garden",
-    location: "Sector 8, Rohtak",
-    price: "₹1.5 Crore",
-    image: "/placeholder.svg",
-    timeAgo: "2 days ago",
-    premium: true,
-  },
-  {
-    id: 5,
-    title: "Plot for Construction",
-    location: "Sector 20, Rohtak",
-    price: "₹45 Lakh",
-    image: "/placeholder.svg",
-    timeAgo: "3 days ago",
-  },
-  {
-    id: 6,
-    title: "PG Accommodation",
-    location: "Sector 6, Rohtak",
-    price: "₹8,000/month",
-    image: "/placeholder.svg",
-    timeAgo: "1 week ago",
-  },
-];
+const formatTimeAgo = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffHours < 1) return "Just now";
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return `${Math.floor(diffDays / 7)} weeks ago`;
+};
 
 const isAdminPosted = (p: AnyProp) =>
   Boolean(
@@ -94,7 +67,7 @@ const isPremium = (p: AnyProp) =>
       (typeof p.plan === "string" && p.plan.toLowerCase().includes("premium")),
   );
 
-function Badge({ ap, premium }: { ap?: boolean; premium?: boolean }) {
+function Badge({ ap, premium, boosted }: { ap?: boolean; premium?: boolean; boosted?: boolean }) {
   if (ap) {
     return (
       <div className="absolute top-2 left-2 bg-black/80 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-bold shadow">
@@ -102,10 +75,19 @@ function Badge({ ap, premium }: { ap?: boolean; premium?: boolean }) {
       </div>
     );
   }
+  if (boosted) {
+    return (
+      <div className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-1 rounded-md text-[10px] md:text-xs font-bold shadow flex items-center gap-1">
+        <Zap className="h-3 w-3" />
+        Featured
+      </div>
+    );
+  }
   if (premium) {
     return (
-      <div className="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-600 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-bold shadow">
-        [premium]
+      <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-bold shadow flex items-center gap-1">
+        <Crown className="h-3 w-3" />
+        Premium
       </div>
     );
   }
@@ -121,6 +103,7 @@ function FreshCard({
 }) {
   const ap = isAdminPosted(property);
   const prem = isPremium(property);
+  const boosted = property.boosted === true;
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-sm transition-shadow">
       <div className="relative aspect-[4/3] bg-gray-100">
@@ -130,7 +113,7 @@ function FreshCard({
           className="w-full h-full object-cover pointer-events-none select-none"
           draggable={false}
         />
-        <Badge ap={ap} premium={prem} />
+        <Badge ap={ap} premium={prem} boosted={boosted} />
         <button className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md">
           <Heart className="h-4 w-4 text-gray-600" />
         </button>
@@ -185,6 +168,76 @@ function FreshCard({
 export default function PropertyListings() {
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [freshRecommendations, setFreshRecommendations] = useState<AnyProp[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFreshRecommendations = async () => {
+      try {
+        setLoading(true);
+        const seenIds = new Set<string>();
+        const allProps: AnyProp[] = [];
+
+        // Fetch both premium and boosted properties
+        const [premiumRes, boostedRes] = await Promise.all([
+          (window as any).api("/properties?premium=true&status=active&limit=20", { timeout: 10000 }),
+          (window as any).api("/properties/boosted", { timeout: 10000 }),
+        ]);
+
+        // Process boosted properties first (priority)
+        if (boostedRes?.ok && boostedRes.json?.success) {
+          const boostedData = boostedRes.json.data || [];
+          const boostedArray = Array.isArray(boostedData) ? boostedData : [];
+          boostedArray.forEach((p: any) => {
+            if (!seenIds.has(p._id)) {
+              seenIds.add(p._id);
+              allProps.push({
+                id: p._id,
+                title: p.title || "Featured Property",
+                price: formatPrice(p.price || 0, p.priceType),
+                location: p.location?.address || p.location?.city || "Rohtak",
+                image: p.images?.[0] || "/placeholder.svg",
+                timeAgo: formatTimeAgo(p.createdAt),
+                boosted: true,
+                premium: p.premium,
+              });
+            }
+          });
+        }
+
+        // Process premium properties
+        if (premiumRes?.ok && premiumRes.json?.success) {
+          const rawData = premiumRes.json.data?.properties || premiumRes.json.data || [];
+          const dataArray = Array.isArray(rawData) ? rawData : [];
+          dataArray.filter((p: any) => p.premium === true || p.isPremium === true)
+            .forEach((p: any) => {
+              if (!seenIds.has(p._id)) {
+                seenIds.add(p._id);
+                allProps.push({
+                  id: p._id,
+                  title: p.title || "Premium Property",
+                  price: formatPrice(p.price || 0, p.priceType),
+                  location: p.location?.address || p.location?.city || "Rohtak",
+                  image: p.images?.[0] || "/placeholder.svg",
+                  timeAgo: formatTimeAgo(p.createdAt),
+                  premium: true,
+                  boosted: false,
+                });
+              }
+            });
+        }
+
+        setFreshRecommendations(allProps);
+      } catch (e) {
+        console.warn("Fresh recommendations fetch failed:", e);
+        setFreshRecommendations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFreshRecommendations();
+  }, []);
 
   const handleEnquiry = (property: AnyProp) => {
     setSelectedProperty(property);
@@ -193,102 +246,27 @@ export default function PropertyListings() {
 
   return (
     <div className="bg-white pb-20">
-      {/* Fresh Recommendations */}
+      {/* Fresh Recommendations - Shows both Premium and Boosted properties */}
       <section className="py-4">
         <div className="px-4">
           <h2 className="text-lg font-bold text-gray-900 mb-3">
             Fresh Recommendations
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {freshRecommendations.map((property) => (
-              <FreshCard
-                key={property.id}
-                property={property}
-                onEnquiry={handleEnquiry}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Ads */}
-      <section className="py-4">
-        <div className="px-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Featured Ads</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[#C70000] text-sm"
-            >
-              See All
-            </Button>
-          </div>
-
-          <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-            {featuredProperties.map((property) => {
-              const ap = isAdminPosted(property);
-              const prem = isPremium(property);
-              return (
-                <div
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Loading recommendations...</div>
+          ) : freshRecommendations.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No premium or featured properties available</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+              {freshRecommendations.map((property) => (
+                <FreshCard
                   key={property.id}
-                  className="flex-shrink-0 w-64 bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
-                >
-                  <div className="relative">
-                    <img
-                      src={property.image}
-                      alt={property.title}
-                      className="w-full h-32 object-cover pointer-events-none select-none"
-                    />
-                    <Watermark
-                      variant="pattern"
-                      className="pointer-events-none"
-                    />
-                    <Badge ap={ap} premium={prem} />
-                    <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <Heart className="h-4 w-4 text-gray-600" />
-                    </button>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 leading-tight">
-                      {property.title}
-                    </h3>
-                    <div className="flex items-center text-gray-500 mb-2">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{property.location}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-[#C70000]">
-                        {property.price}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {property.timeAgo}
-                      </span>
-                    </div>
-                    <div className="flex space-x-2 mt-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 border-[#C70000] text-[#C70000]"
-                        onClick={() => handleEnquiry(property)}
-                        data-testid="enquiry-btn"
-                      >
-                        <Send className="h-3 w-3 mr-1" />
-                        Enquiry Now
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-[#C70000] hover:bg-[#A60000] text-white"
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  property={property}
+                  onEnquiry={handleEnquiry}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

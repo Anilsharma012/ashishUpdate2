@@ -79,53 +79,22 @@ const PropertyAdsSlider: React.FC = () => {
       try {
         setLoading(true);
         
-        // Fetch both premium and boosted properties
-        const [premiumRes, boostedRes] = await Promise.all([
-          (window as any).api("/properties?premium=true&status=active&limit=20", { timeout: 10000 }),
-          (window as any).api("/properties/boosted", { timeout: 10000 }),
-        ]);
+        // Featured Properties section shows ONLY boosted properties (not premium)
+        const boostedRes = await (window as any).api("/properties/boosted", { timeout: 10000 });
         
         const allProperties: PremiumProperty[] = [];
         const seenIds = new Set<string>();
         
-        // Process premium properties
-        if (premiumRes?.ok && premiumRes.json?.success) {
-          const rawData = premiumRes.json.data?.properties || premiumRes.json.data || [];
-          const dataArray = Array.isArray(rawData) ? rawData : [];
-          dataArray.filter((p: any) => p.premium === true || p.featured === true)
-            .forEach((p: any) => {
-              if (!seenIds.has(p._id)) {
-                seenIds.add(p._id);
-                allProperties.push({
-                  _id: p._id,
-                  title: p.title || "Premium Property",
-                  price: p.price || 0,
-                  priceType: p.priceType,
-                  propertyType: p.propertyType,
-                  images: Array.isArray(p.images) ? p.images : [],
-                  location: p.location || {},
-                  bedrooms: p.bedrooms,
-                  bathrooms: p.bathrooms,
-                  area: p.area,
-                  areaUnit: p.areaUnit || "sq.ft",
-                  premium: p.premium,
-                  featured: p.featured,
-                });
-              }
-            });
-        }
-        
-        // Process boosted properties (add at the beginning for priority)
+        // Process boosted properties only
         if (boostedRes?.ok && boostedRes.json?.success) {
           const boostedData = boostedRes.json.data || [];
           const boostedArray = Array.isArray(boostedData) ? boostedData : [];
-          const boostedProps: PremiumProperty[] = [];
           boostedArray.forEach((p: any) => {
             if (!seenIds.has(p._id)) {
               seenIds.add(p._id);
-              boostedProps.push({
+              allProperties.push({
                 _id: p._id,
-                title: p.title || "Boosted Property",
+                title: p.title || "Featured Property",
                 price: p.price || 0,
                 priceType: p.priceType,
                 propertyType: p.propertyType,
@@ -140,8 +109,6 @@ const PropertyAdsSlider: React.FC = () => {
               });
             }
           });
-          // Add boosted at beginning for priority
-          allProperties.unshift(...boostedProps);
         }
         
         setProperties(allProperties);
