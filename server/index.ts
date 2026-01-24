@@ -289,6 +289,8 @@ import {
   getBoostedProperties,
 } from "./routes/boost-plans";
 
+import boostBannerRouter from "./routes/boost-banner";
+
 // Payment routes
 import {
   createTransaction,
@@ -1541,6 +1543,9 @@ export function createServer() {
   app.put("/api/boost-plans/:id", authenticateToken, requireAdmin, updateBoostPlan);
   app.delete("/api/boost-plans/:id", authenticateToken, requireAdmin, deleteBoostPlan);
   app.post("/api/boost/apply", authenticateToken, applyBoost);
+
+  // Boost Banner routes
+  app.use("/api", boostBannerRouter);
 
   // Coupon routes
   app.get("/api/admin/coupons", authenticateToken, requireAdmin, getAllCoupons);

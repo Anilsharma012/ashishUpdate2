@@ -51,6 +51,7 @@ import SystemUpdate from "../components/admin/SystemUpdate";
 import AdvertisementListingPackage from "../components/admin/AdvertisementListingPackage";
 import FeatureAdvertisementPackage from "../components/admin/FeatureAdvertisementPackage";
 import BoostPlanManagement from "../components/admin/BoostPlanManagement";
+import BoostBannerManagement from "../components/admin/BoostBannerManagement";
 import ContentManagement from "../components/admin/ContentManagement";
 import DatabaseDiagnostics from "../components/admin/DatabaseDiagnostics";
 import QuickCreatePage from "../components/admin/QuickCreatePage";
@@ -1145,6 +1146,8 @@ export default function Admin() {
           return <FeatureAdvertisementPackage />;
         case "boost-plans":
           return <BoostPlanManagement />;
+        case "boost-banner":
+          return <BoostBannerManagement />;
         case "transactions":
           return <PaymentTransactions />;
         case "manual-payment-approval":

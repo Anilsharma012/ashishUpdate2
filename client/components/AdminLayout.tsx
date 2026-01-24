@@ -36,6 +36,7 @@ import {
   Edit,
   Bell,
   Trash2,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -113,6 +114,11 @@ const menuItems: MenuItem[] = [
         id: "boost-plans",
         label: "Boost Up Plans",
         icon: Activity,
+      },
+      {
+        id: "boost-banner",
+        label: "Boost Up Banner",
+        icon: ImageIcon,
       },
     ],
   },

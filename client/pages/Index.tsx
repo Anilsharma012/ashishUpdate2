@@ -11,6 +11,7 @@ import HomepageBanner from "../components/HomepageBanner";
 import StaticFooter from "../components/StaticFooter";
 import HeroImageSlider from "../components/HeroImageSlider";
 import PropertyAdsSlider from "../components/PropertyAdsSlider";
+import BoostBanner from "../components/BoostBanner";
 import AdSlot from "../components/AdSlot";
 import AdvertisementBannerCarousel from "../components/AdvertisementBannerCarousel";
 import AdvertisementForm from "../components/AdvertisementBanners";
@@ -73,6 +74,9 @@ export default function Index() {
         <div className="px-4 mt-4">
           <AdSlot format="horizontal" slotKey="below_categories" />
         </div>
+
+        {/* Boost Up Banner - above Featured Properties */}
+        <BoostBanner />
 
         {/* Featured Property Ads Slider (moved below categories) */}
         <PropertyAdsSlider />

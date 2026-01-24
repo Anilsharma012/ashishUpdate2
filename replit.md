@@ -4,6 +4,18 @@ A production-ready full-stack property management application built with React a
 
 ## Recent Changes (January 2026)
 
+### Boost Up Banner & Feature System (January 24, 2026)
+- Added small "Boost Up" banner above Featured Properties section on homepage
+- Admin can customize banner text, colors, button text, and link URL via admin panel
+- Banner shows active boosted properties count badge when enabled
+- Admin sidebar now has "Boost Up Banner" option under Packages menu for banner management
+- Homepage displays: Boost Banner → Featured Properties (boosted only) → Fresh Recommendations (premium + boosted)
+- API endpoints for Boost Banner:
+  - `GET /api/boost-banner-settings` - Get banner settings (public)
+  - `GET /api/admin/boost-banner-settings` - Get settings (admin only)
+  - `POST /api/admin/boost-banner-settings` - Save settings (admin only)
+- Key files: server/routes/boost-banner.ts, client/components/BoostBanner.tsx, client/components/admin/BoostBannerManagement.tsx
+
 ### Boost Up Feature System (January 21, 2026)
 - Implemented complete "Boost Up" feature for property listings to increase visibility
 - Admin can create/edit/delete boost plans with custom pricing, duration, and features
