@@ -79,49 +79,21 @@ const PropertyAdsSlider: React.FC = () => {
       try {
         setLoading(true);
         
-        // Featured Properties section shows boosted AND featured properties
-        const [boostedRes, featuredRes] = await Promise.all([
-          (window as any).api("/properties/boosted", { timeout: 10000 }),
-          (window as any).api("/properties/approved-featured", { timeout: 10000 })
-        ]);
+        // Featured Properties section shows ONLY featured properties (NOT boosted)
+        // Boosted properties are shown in BoostBanner section separately
+        const featuredRes = await (window as any).api("/properties/approved-featured", { timeout: 10000 });
         
-        const allProperties: PremiumProperty[] = [];
-        const seenIds = new Set<string>();
+        const featuredOnlyProperties: PremiumProperty[] = [];
         
-        // Process boosted properties first (higher priority)
-        if (boostedRes?.ok && boostedRes.json?.success) {
-          const boostedData = boostedRes.json.data || [];
-          const boostedArray = Array.isArray(boostedData) ? boostedData : [];
-          boostedArray.forEach((p: any) => {
-            if (!seenIds.has(p._id)) {
-              seenIds.add(p._id);
-              allProperties.push({
-                _id: p._id,
-                title: p.title || "Featured Property",
-                price: p.price || 0,
-                priceType: p.priceType,
-                propertyType: p.propertyType,
-                images: Array.isArray(p.images) ? p.images : [],
-                location: p.location,
-                bedrooms: p.bedrooms,
-                bathrooms: p.bathrooms,
-                area: p.area,
-                areaUnit: p.areaUnit,
-                premium: p.premium,
-                featured: true,
-              });
-            }
-          });
-        }
-        
-        // Process featured properties (admin-approved featured purchases)
+        // Process featured properties - exclude boosted ones
         if (featuredRes?.ok && featuredRes.json?.success) {
           const featuredData = featuredRes.json.data || [];
           const featuredArray = Array.isArray(featuredData) ? featuredData : [];
           featuredArray.forEach((p: any) => {
-            if (!seenIds.has(p._id)) {
-              seenIds.add(p._id);
-              allProperties.push({
+            // Only include if NOT currently boosted
+            const isBoosted = p.boosted === true && p.boostEndTime && new Date(p.boostEndTime) > new Date();
+            if (!isBoosted) {
+              featuredOnlyProperties.push({
                 _id: p._id,
                 title: p.title || "Featured Property",
                 price: p.price || 0,
@@ -134,13 +106,13 @@ const PropertyAdsSlider: React.FC = () => {
                 area: p.area,
                 areaUnit: p.areaUnit || "sq.ft",
                 premium: p.premium,
-                featured: true, // Boosted properties are featured
+                featured: true,
               });
             }
           });
         }
         
-        setProperties(allProperties);
+        setProperties(featuredOnlyProperties);
       } catch (e) {
         console.warn("Featured properties fetch failed:", e);
         setProperties([]);
