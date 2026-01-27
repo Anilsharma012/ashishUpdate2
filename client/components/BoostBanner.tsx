@@ -1,18 +1,24 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, ChevronLeft, ChevronRight, MapPin, IndianRupee } from "lucide-react";
+import { Zap, ChevronLeft, ChevronRight, MapPin, Bed, Bath, Square } from "lucide-react";
 
 interface BoostedProperty {
   _id: string;
   title: string;
   price: number;
   priceType?: string;
+  propertyType?: string;
   images: string[];
   location?: {
     city?: string;
     address?: string;
     area?: string;
+    sector?: string;
   };
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  areaUnit?: string;
   boostEndTime?: string;
 }
 
@@ -29,8 +35,8 @@ interface BoostBannerSettings {
 
 const defaultSettings: BoostBannerSettings = {
   enabled: true,
-  title: "Boosted Properties",
-  subtitle: "Premium visibility ads",
+  title: "Boost Your Property",
+  subtitle: "Get more visibility with our Boost Plans",
   backgroundColor: "#dc2626",
   textColor: "#ffffff",
   linkUrl: "/packages",
@@ -45,13 +51,22 @@ const formatPrice = (price: number): string => {
   return `₹${price}`;
 };
 
+const getMainImage = (images: string[]) => {
+  if (!images || images.length === 0) return "/placeholder.svg";
+  const img = images[0];
+  if (img.startsWith("http")) return img;
+  if (img.startsWith("/")) return img;
+  return `/uploads/properties/${img}`;
+};
+
 export default function BoostBanner() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<BoostBannerSettings>(defaultSettings);
   const [properties, setProperties] = useState<BoostedProperty[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,20 +102,35 @@ export default function BoostBanner() {
   useEffect(() => {
     if (properties.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % properties.length);
-    }, 4000);
+      setCurrentSlide((prev) => (prev + 1) % properties.length);
+    }, 5000);
     return () => clearInterval(interval);
   }, [properties.length]);
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + properties.length) % properties.length);
+    setCurrentSlide((prev) => (prev - 1 + properties.length) % properties.length);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % properties.length);
+    setCurrentSlide((prev) => (prev + 1) % properties.length);
   };
 
-  if (loading) return null;
+  const getLocationText = (loc: BoostedProperty["location"]) => {
+    if (!loc) return "Rohtak";
+    const parts = [loc.sector || loc.area, loc.city].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : "Rohtak";
+  };
+
+  if (loading) {
+    return (
+      <div className="px-4 py-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
+          <div className="w-full h-48 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   if (!settings.enabled) return null;
 
@@ -125,7 +155,7 @@ export default function BoostBanner() {
             className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm flex-shrink-0"
             style={{ backgroundColor: settings.textColor, color: settings.backgroundColor }}
           >
-            {settings.linkText}
+            {settings.linkText} →
           </button>
         </div>
       </div>
@@ -133,97 +163,141 @@ export default function BoostBanner() {
   }
 
   return (
-    <div className="px-4 mb-4">
-      <div
-        className="rounded-xl overflow-hidden shadow-md"
-        style={{ backgroundColor: settings.backgroundColor }}
-      >
-        <div className="flex items-center justify-between px-3 py-2" style={{ color: settings.textColor }}>
+    <div className="px-4 py-6 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            <span className="font-bold text-sm">{settings.title}</span>
+            <Zap className="h-5 w-5 text-[#C70000]" />
+            <h2 className="text-xl font-bold text-gray-900">{settings.title}</h2>
             {settings.showBoostedCount && (
-              <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
+              <span className="bg-[#C70000] text-white px-2 py-0.5 rounded-full text-xs font-medium">
                 {properties.length} Active
               </span>
             )}
           </div>
           <button
-            className="px-3 py-1 rounded-lg text-xs font-medium"
-            style={{ backgroundColor: settings.textColor, color: settings.backgroundColor }}
             onClick={() => navigate(settings.linkUrl)}
+            className="text-sm text-[#C70000] font-medium hover:underline"
           >
-            {settings.linkText}
+            {settings.linkText} →
           </button>
         </div>
 
-        <div className="relative bg-white">
+        <div className="relative">
           <div
-            ref={sliderRef}
-            className="flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            ref={wrapRef}
+            className="overflow-hidden rounded-lg touch-pan-y select-none"
+            style={{ WebkitUserSelect: "none", userSelect: "none" }}
           >
-            {properties.map((property) => (
-              <div
-                key={property._id}
-                className="min-w-full flex cursor-pointer hover:bg-gray-50"
-                onClick={() => navigate(`/property/${property._id}`)}
-              >
-                <div className="w-24 h-20 sm:w-32 sm:h-24 flex-shrink-0">
-                  <img
-                    src={property.images?.[0] || "/placeholder.svg"}
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 p-2 sm:p-3 min-w-0">
-                  <h4 className="font-semibold text-gray-900 text-sm truncate">{property.title}</h4>
-                  <div className="flex items-center text-gray-500 text-xs mt-1">
-                    <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span className="truncate">
-                      {property.location?.area || property.location?.address || property.location?.city || "Rohtak"}
-                    </span>
+            <div
+              ref={trackRef}
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translate3d(-${currentSlide * 100}%,0,0)` }}
+            >
+              {properties.map((property, index) => {
+                const mainUrl = getMainImage(property.images);
+                return (
+                  <div
+                    key={`${property._id}-${index}`}
+                    className="w-full flex-shrink-0"
+                  >
+                    <div
+                      onClick={() => navigate(`/property/${property._id}`)}
+                      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
+                    >
+                      <div className="relative h-64 md:h-80">
+                        <img
+                          src={mainUrl}
+                          alt={property.title}
+                          draggable={false}
+                          className="w-full h-full object-cover pointer-events-none select-none"
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).src = "/placeholder.svg")
+                          }
+                        />
+
+                        <div className="absolute top-4 left-4 flex gap-2">
+                          <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            BOOSTED
+                          </span>
+                        </div>
+
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 md:p-6">
+                          <h3 className="text-white text-lg md:text-xl font-bold mb-1 line-clamp-1">
+                            {property.title}
+                          </h3>
+                          <div className="flex items-center text-white/90 text-sm mb-2">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {getLocationText(property.location)}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-white text-xl md:text-2xl font-bold">
+                              {formatPrice(property.price)}
+                              {property.priceType === "rent" && (
+                                <span className="text-sm font-normal opacity-80">/mo</span>
+                              )}
+                            </span>
+
+                            <div className="flex items-center gap-3 text-white/90 text-sm">
+                              {property.bedrooms && (
+                                <span className="flex items-center gap-1">
+                                  <Bed className="h-4 w-4" />
+                                  {property.bedrooms}
+                                </span>
+                              )}
+                              {property.bathrooms && (
+                                <span className="flex items-center gap-1">
+                                  <Bath className="h-4 w-4" />
+                                  {property.bathrooms}
+                                </span>
+                              )}
+                              {property.area && (
+                                <span className="flex items-center gap-1">
+                                  <Square className="h-4 w-4" />
+                                  {property.area} {property.areaUnit || "sq.ft"}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[#C70000] font-bold text-sm flex items-center">
-                      {formatPrice(property.price)}
-                      {property.priceType === "rent" && <span className="text-xs font-normal text-gray-500">/mo</span>}
-                    </span>
-                    <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-medium">
-                      Boosted
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
 
           {properties.length > 1 && (
             <>
               <button
-                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 shadow rounded-full p-1 hover:bg-white"
+                onClick={handlePrev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 z-10 transition-all"
               >
-                <ChevronLeft className="h-4 w-4 text-gray-700" />
+                <ChevronLeft className="h-5 w-5 text-gray-700" />
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 shadow rounded-full p-1 hover:bg-white"
+                onClick={handleNext}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 z-10 transition-all"
               >
-                <ChevronRight className="h-4 w-4 text-gray-700" />
+                <ChevronRight className="h-5 w-5 text-gray-700" />
               </button>
             </>
           )}
         </div>
 
         {properties.length > 1 && (
-          <div className="flex justify-center gap-1 py-2 bg-white">
+          <div className="flex justify-center gap-2 mt-4">
             {properties.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  idx === currentIndex ? "bg-[#C70000]" : "bg-gray-300"
+                onClick={() => setCurrentSlide(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  idx === currentSlide 
+                    ? "bg-[#C70000] w-6" 
+                    : "bg-gray-300 hover:bg-gray-400"
                 }`}
               />
             ))}
