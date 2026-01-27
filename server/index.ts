@@ -287,6 +287,8 @@ import {
   deleteBoostPlan,
   applyBoost,
   getBoostedProperties,
+  applyFeatured,
+  getApprovedFeaturedProperties,
 } from "./routes/boost-plans";
 
 import boostBannerRouter from "./routes/boost-banner";
@@ -1543,6 +1545,10 @@ export function createServer() {
   app.put("/api/boost-plans/:id", authenticateToken, requireAdmin, updateBoostPlan);
   app.delete("/api/boost-plans/:id", authenticateToken, requireAdmin, deleteBoostPlan);
   app.post("/api/boost/apply", authenticateToken, applyBoost);
+
+  // Featured routes
+  app.post("/api/featured/apply", authenticateToken, applyFeatured);
+  app.get("/api/properties/approved-featured", getApprovedFeaturedProperties);
 
   // Boost Banner routes
   app.use("/api", boostBannerRouter);

@@ -199,3 +199,97 @@ export const getBoostedProperties: RequestHandler = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// Apply featured to property (pending admin approval)
+export const applyFeatured: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const { propertyId, packageId } = req.body;
+    const userId = (req as any).user?.userId || (req as any).user?.id;
+
+    if (!propertyId || !packageId) {
+      return res.status(400).json({ success: false, error: "Property ID and Package ID are required" });
+    }
+
+    // Find the package
+    const pkg = await db.collection("ad_packages").findOne({ _id: new ObjectId(packageId) });
+    if (!pkg) {
+      return res.status(404).json({ success: false, error: "Featured plan not found" });
+    }
+
+    // Check if property exists and belongs to user
+    const property = await db.collection("properties").findOne({ _id: new ObjectId(propertyId) });
+    if (!property) {
+      return res.status(404).json({ success: false, error: "Property not found" });
+    }
+
+    // Calculate featured end date based on package duration
+    const featuredStartDate = new Date();
+    const featuredEndDate = new Date(featuredStartDate.getTime() + pkg.duration * 24 * 60 * 60 * 1000);
+
+    // Update property with featured status (pending admin approval)
+    await db.collection("properties").updateOne(
+      { _id: new ObjectId(propertyId) },
+      {
+        $set: {
+          featured: false, // Will be set to true after admin approval
+          featuredPending: true,
+          featuredPackageId: packageId,
+          featuredPackageName: pkg.name,
+          featuredStartDate,
+          featuredEndDate,
+          featuredRequestedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    // Create a featured request record for admin review
+    await db.collection("featured_requests").insertOne({
+      propertyId: new ObjectId(propertyId),
+      userId: userId ? new ObjectId(userId) : null,
+      packageId: new ObjectId(packageId),
+      packageName: pkg.name,
+      packagePrice: pkg.price,
+      duration: pkg.duration,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    res.json({ 
+      success: true, 
+      message: "Featured request submitted! Admin will review and approve your property.",
+      data: { featuredEndDate }
+    });
+  } catch (error: any) {
+    console.error("Error applying featured:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Get featured properties (admin approved) - for homepage display
+export const getApprovedFeaturedProperties: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const now = new Date();
+
+    const properties = await db
+      .collection("properties")
+      .find({
+        featured: true,
+        featuredEndDate: { $gt: now },
+        approvalStatus: "approved",
+        status: "active",
+        isDeleted: { $ne: true },
+      })
+      .sort({ featuredStartDate: -1 })
+      .limit(20)
+      .toArray();
+
+    res.json({ success: true, data: properties });
+  } catch (error: any) {
+    console.error("Error fetching featured properties:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
