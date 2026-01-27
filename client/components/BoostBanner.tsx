@@ -205,7 +205,7 @@ export default function BoostBanner() {
                       onClick={() => navigate(`/property/${property._id}`)}
                       className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
                     >
-                      <div className="relative h-64 md:h-80">
+                      <div className="relative h-48 md:h-56">
                         <img
                           src={mainUrl}
                           alt={property.title}
