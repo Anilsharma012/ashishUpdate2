@@ -193,6 +193,11 @@ export default function EnhancedSellerDashboard() {
   const [boostPlans, setBoostPlans] = useState<any[]>([]);
   const [selectedBoostProperty, setSelectedBoostProperty] = useState<Property | null>(null);
 
+  // Featured modal state
+  const [featuredModalOpen, setFeaturedModalOpen] = useState(false);
+  const [featuredPlans, setFeaturedPlans] = useState<any[]>([]);
+  const [selectedFeaturedProperty, setSelectedFeaturedProperty] = useState<Property | null>(null);
+
   // Fetch boost plans
   const fetchBoostPlans = async () => {
     try {
@@ -233,6 +238,52 @@ export default function EnhancedSellerDashboard() {
     setSelectedBoostProperty(property);
     fetchBoostPlans();
     setBoostModalOpen(true);
+  };
+
+  // Fetch featured plans
+  const fetchFeaturedPlans = async () => {
+    try {
+      const res = await api.get("plans?isActive=true");
+      if (res.data?.success) {
+        setFeaturedPlans(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch featured plans:", error);
+    }
+  };
+
+  // Apply featured to property
+  const applyFeatured = async (planId: string) => {
+    if (!selectedFeaturedProperty) return;
+    try {
+      const token = await getAuthToken();
+      const res = await api.post("featured/apply", {
+        propertyId: selectedFeaturedProperty._id,
+        packageId: planId,
+      }, token || "");
+      if (res.data?.success) {
+        if (res.data.autoApproved) {
+          toast.success("Featured applied! Your property is now in Featured Properties section.");
+        } else {
+          toast.success("Featured request submitted for admin review.");
+        }
+        setFeaturedModalOpen(false);
+        setSelectedFeaturedProperty(null);
+        fetchDashboardData(false);
+      } else {
+        toast.error(res.data?.error || "Failed to apply featured");
+      }
+    } catch (error) {
+      console.error("Failed to apply featured:", error);
+      toast.error("Failed to apply featured. Please try again.");
+    }
+  };
+
+  // Open featured modal for a property
+  const openFeaturedModal = (property: Property) => {
+    setSelectedFeaturedProperty(property);
+    fetchFeaturedPlans();
+    setFeaturedModalOpen(true);
   };
 
   const openReplyModal = (m: Message) => {
@@ -1399,10 +1450,39 @@ export default function EnhancedSellerDashboard() {
                                     Boost
                                   </Button>
                                 )}
+                                {property.approvalStatus === "approved" && !property.featured ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-700"
+                                    onClick={() => openFeaturedModal(property)}
+                                    title="Feature this property in Featured Properties section"
+                                  >
+                                    <Star className="h-3 w-3 mr-1" />
+                                    Featured
+                                  </Button>
+                                ) : property.approvalStatus !== "approved" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="opacity-50 cursor-not-allowed"
+                                    disabled
+                                    title="Property must be approved before featuring"
+                                  >
+                                    <Star className="h-3 w-3 mr-1" />
+                                    Featured
+                                  </Button>
+                                )}
                                 {property.boosted && (
                                   <Badge className="ml-1 bg-yellow-100 text-yellow-800">
                                     <Zap className="h-3 w-3 mr-1" />
                                     Boosted
+                                  </Badge>
+                                )}
+                                {property.featured && (
+                                  <Badge className="ml-1 bg-blue-100 text-blue-800">
+                                    <Star className="h-3 w-3 mr-1" />
+                                    Featured
                                   </Badge>
                                 )}
                                 {property.isPremium && (
@@ -2086,6 +2166,60 @@ export default function EnhancedSellerDashboard() {
             <div className="text-center py-8">
               <Zap className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No boost plans available yet</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Featured Plans Modal */}
+      <Dialog open={featuredModalOpen} onOpenChange={setFeaturedModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-blue-500" />
+              {selectedFeaturedProperty ? `Feature: ${selectedFeaturedProperty.title}` : "Available Featured Plans"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-700">
+              <strong>Note:</strong> Since your property is already admin-approved, purchasing a featured plan will immediately add it to the Featured Properties section on the homepage.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {featuredPlans.map((plan) => (
+              <Card key={plan._id} className="border-2 hover:border-blue-500 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="h-5 w-5 text-blue-500" />
+                    <h3 className="font-semibold">{plan.name}</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-[#C70000]">₹{plan.price}</span>
+                    <span className="text-sm text-gray-500">{plan.duration} days</span>
+                  </div>
+                  <ul className="text-sm space-y-1 mb-4">
+                    {plan.features?.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={() => applyFeatured(plan._id)}
+                  >
+                    Buy & Apply
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {featuredPlans.length === 0 && (
+            <div className="text-center py-8">
+              <Star className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No featured plans available yet</p>
             </div>
           )}
         </DialogContent>

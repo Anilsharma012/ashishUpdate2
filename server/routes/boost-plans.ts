@@ -200,7 +200,7 @@ export const getBoostedProperties: RequestHandler = async (req, res) => {
   }
 };
 
-// Apply featured to property (pending admin approval)
+// Apply featured to property (auto-approve if property already admin-approved)
 export const applyFeatured: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
@@ -227,41 +227,87 @@ export const applyFeatured: RequestHandler = async (req, res) => {
     const featuredStartDate = new Date();
     const featuredEndDate = new Date(featuredStartDate.getTime() + pkg.duration * 24 * 60 * 60 * 1000);
 
-    // Update property with featured status (pending admin approval)
-    await db.collection("properties").updateOne(
-      { _id: new ObjectId(propertyId) },
-      {
-        $set: {
-          featured: false, // Will be set to true after admin approval
-          featuredPending: true,
-          featuredPackageId: packageId,
-          featuredPackageName: pkg.name,
-          featuredStartDate,
-          featuredEndDate,
-          featuredRequestedAt: new Date(),
-          updatedAt: new Date(),
-        },
-      }
-    );
+    // Check if property is already admin-approved
+    const isAutoApproved = property.approvalStatus === "approved";
 
-    // Create a featured request record for admin review
-    await db.collection("featured_requests").insertOne({
-      propertyId: new ObjectId(propertyId),
-      userId: userId ? new ObjectId(userId) : null,
-      packageId: new ObjectId(packageId),
-      packageName: pkg.name,
-      packagePrice: pkg.price,
-      duration: pkg.duration,
-      status: "pending",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (isAutoApproved) {
+      // Auto-approve: Property already admin-approved, directly make it featured
+      await db.collection("properties").updateOne(
+        { _id: new ObjectId(propertyId) },
+        {
+          $set: {
+            featured: true, // Directly set to true since property is already approved
+            featuredPending: false,
+            featuredPackageId: packageId,
+            featuredPackageName: pkg.name,
+            featuredStartDate,
+            featuredEndDate,
+            featuredApprovedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        }
+      );
 
-    res.json({ 
-      success: true, 
-      message: "Featured request submitted! Admin will review and approve your property.",
-      data: { featuredEndDate }
-    });
+      // Create a featured request record (auto-approved)
+      await db.collection("featured_requests").insertOne({
+        propertyId: new ObjectId(propertyId),
+        userId: userId ? new ObjectId(userId) : null,
+        packageId: new ObjectId(packageId),
+        packageName: pkg.name,
+        packagePrice: pkg.price,
+        duration: pkg.duration,
+        status: "approved", // Auto-approved
+        autoApproved: true,
+        approvedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      res.json({ 
+        success: true, 
+        autoApproved: true,
+        message: "Featured applied! Your property is now in Featured Properties section.",
+        data: { featuredEndDate }
+      });
+    } else {
+      // Pending approval: Property not yet admin-approved
+      await db.collection("properties").updateOne(
+        { _id: new ObjectId(propertyId) },
+        {
+          $set: {
+            featured: false, // Will be set to true after admin approval
+            featuredPending: true,
+            featuredPackageId: packageId,
+            featuredPackageName: pkg.name,
+            featuredStartDate,
+            featuredEndDate,
+            featuredRequestedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      // Create a featured request record for admin review
+      await db.collection("featured_requests").insertOne({
+        propertyId: new ObjectId(propertyId),
+        userId: userId ? new ObjectId(userId) : null,
+        packageId: new ObjectId(packageId),
+        packageName: pkg.name,
+        packagePrice: pkg.price,
+        duration: pkg.duration,
+        status: "pending",
+        autoApproved: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      res.json({ 
+        success: true, 
+        autoApproved: false,
+        message: "Featured request submitted! Admin will review and approve your property.",
+        data: { featuredEndDate }
+      });
+    }
   } catch (error: any) {
     console.error("Error applying featured:", error);
     res.status(500).json({ success: false, error: error.message });
