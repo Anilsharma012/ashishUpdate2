@@ -897,6 +897,7 @@ export function createServer() {
   app.get("/api/properties", getProperties);
   app.get("/api/properties/featured", getFeaturedProperties);
   app.get("/api/properties/boosted", getBoostedProperties);
+  app.get("/api/properties/approved-featured", getApprovedFeaturedProperties);
   app.get("/api/properties/:id", getPropertyById);
   app.post(
     "/api/properties",
@@ -1548,7 +1549,6 @@ export function createServer() {
 
   // Featured routes
   app.post("/api/featured/apply", authenticateToken, applyFeatured);
-  app.get("/api/properties/approved-featured", getApprovedFeaturedProperties);
 
   // Boost Banner routes
   app.use("/api", boostBannerRouter);
