@@ -276,18 +276,19 @@ export const deletePackage: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { packageId } = req.params;
 
-    // Check if package is being used
-    const activeTransactions = await db
+    // Only block deletion if there are pending (incomplete) transactions
+    // Paid/completed transactions should not block package deletion
+    const pendingTransactions = await db
       .collection("transactions")
       .countDocuments({
         packageId: packageId,
-        status: { $in: ["pending", "paid"] },
+        status: "pending",
       });
 
-    if (activeTransactions > 0) {
+    if (pendingTransactions > 0) {
       return res.status(400).json({
         success: false,
-        error: "Cannot delete package with active transactions",
+        error: `Cannot delete package with ${pendingTransactions} pending transactions. Please complete or cancel them first.`,
       });
     }
 
