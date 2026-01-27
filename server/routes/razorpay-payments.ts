@@ -8,6 +8,9 @@ import "dotenv/config";
 import { sendPushNotificationToUser } from "../utils/fcm-push";
 import { sendPaymentSuccessEmail } from "../utils/mailer";
 
+/** ✅ ESM/CJS safe Razorpay constructor (no delete/remove, only added) */
+const RazorpayCtor: any = (Razorpay as any)?.default || (Razorpay as any);
+
 /** ---------- Config ---------- */
 interface RazorpayConfig {
   enabled: boolean;
@@ -110,25 +113,26 @@ export const createRazorpayOrder: RequestHandler = async (req, res) => {
       }
     }
 
-    // Razorpay instance
-    const rzp = new Razorpay({
+    // Razorpay instance (✅ updated to safe constructor)
+    const rzp = new RazorpayCtor({
       key_id: cfg.keyId,
       key_secret: cfg.keySecret,
     });
 
     // Create order
-    const order = await rzp.orders.create({
+    const order = (await rzp.orders.create({
       amount: amountPaise,
       currency: "INR",
       receipt: `rcpt_${pkgObjId.toString().slice(-8)}_${Date.now()}`,
-      payment_capture: true,
+      // ✅ IMPORTANT: use 1 instead of true to avoid API rejection
+      payment_capture: 1,
       notes: {
         packageId: pkgObjId.toString(),
         propertyId: propObjId?.toString() || "none",
         userId: userObjId.toString(),
         packageName: String(pkg.name || ""),
       },
-    }) as any;
+    })) as any;
 
     const orderId = order.id as string;
 
@@ -171,10 +175,21 @@ export const createRazorpayOrder: RequestHandler = async (req, res) => {
 
     return res.json(response);
   } catch (err: any) {
-    console.error("❌ Error creating Razorpay order:", err?.message || err);
-    return res
-      .status(500)
-      .json({ success: false, error: "Failed to create Razorpay order" });
+    // ✅ Better debug (no remove, only improved)
+    console.error("❌ Error creating Razorpay order:", {
+      message: err?.message,
+      statusCode: err?.statusCode,
+      error: err?.error,
+      description: err?.error?.description,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error:
+        err?.error?.description ||
+        err?.message ||
+        "Failed to create Razorpay order",
+    });
   }
 };
 
@@ -334,7 +349,7 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
           type: "payment_success",
           propertyId: propertyId,
           transactionId: String(tx._id),
-        }
+        },
       );
       console.log("✅ Push notification sent for payment success");
     } catch (pushErr) {
@@ -350,7 +365,7 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
           propertyTitle,
           Number(tx.amount || 0),
           razorpay_payment_id,
-          String(tx.packageName || "Package")
+          String(tx.packageName || "Package"),
         );
         console.log("✅ Payment success email sent to:", userEmail);
       } catch (emailErr) {

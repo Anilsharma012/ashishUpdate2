@@ -46,7 +46,7 @@ export const getUsersWithListingStats: RequestHandler = async (req, res) => {
 
         // Get free listings in current period
         const freeListingLimit = user.freeListingLimit || {
-          limit: 5,
+          limit: 2,
           period: "monthly",
           limitType: 30,
         };
@@ -173,7 +173,7 @@ export const getAdminFreeListingSettings: RequestHandler = async (req, res) => {
       return res.json({
         success: true,
         data: {
-          defaultLimit: 5,
+          defaultLimit: 2,
           defaultPeriod: "monthly",
           defaultLimitType: 30,
         },
@@ -256,7 +256,7 @@ export const getUserListingStats: RequestHandler = async (req, res) => {
     }
 
     const freeListingLimit = user.freeListingLimit || {
-      limit: 5,
+      limit: 2,
       period: "monthly",
       limitType: 30,
     };
@@ -335,7 +335,7 @@ export const getCurrentUserListingStats: RequestHandler = async (req, res) => {
     }
 
     const freeListingLimit = user.freeListingLimit || {
-      limit: 5,
+      limit: 2,
       period: "monthly",
       limitType: 30,
     };
