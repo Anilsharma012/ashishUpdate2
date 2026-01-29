@@ -117,7 +117,15 @@ export interface Category {
   slug: string; // unique
   icon?: string;
   iconUrl?: string;
-  type?: "buy" | "rent" | "commercial" | "agricultural" | "co-living" | "new-projects" | "maps" | "other-services"; // Category type
+  type?:
+    | "buy"
+    | "rent"
+    | "commercial"
+    | "agricultural"
+    | "co-living"
+    | "new-projects"
+    | "maps"
+    | "other-services"; // Category type
   description?: string;
   sortOrder?: number;
   order?: number;
@@ -372,6 +380,7 @@ export interface BoostPlan {
 export const ROHTAK_AREAS = [
   "Model Town",
   "Suncity",
+  "Suncity Heist",
   "Sector 1",
   "Sector 2",
   "Sector 3",
