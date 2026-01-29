@@ -128,6 +128,27 @@ interface Payment {
 // --------------------------------------------------
 // Helpers
 // --------------------------------------------------
+
+// Razorpay script loader
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Razorpay) return resolve();
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Failed to load Razorpay"));
+    document.body.appendChild(s);
+  });
+}
+
+// Auth headers helper
+const authHeaders = (t: string) => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${t}`,
+  "x-auth-token": t,
+});
+
 async function getAuthToken(): Promise<string | null> {
   let token: string | null =
     localStorage.getItem("userToken") ||
@@ -211,25 +232,77 @@ export default function EnhancedSellerDashboard() {
   };
 
   // Apply boost to property
-  const applyBoost = async (planId: string) => {
+  const applyBoost = async (plan: any) => {
     if (!selectedBoostProperty) return;
     try {
       const token = await getAuthToken();
-      const res = await api.post("boost/apply", {
-        propertyId: selectedBoostProperty._id,
-        boostPlanId: planId,
-      }, token || "");
-      if (res.data?.success) {
-        toast.success("Boost applied successfully!");
-        setBoostModalOpen(false);
-        setSelectedBoostProperty(null);
-        fetchDashboardData(false);
-      } else {
-        toast.error(res.data?.error || "Failed to apply boost");
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
       }
+
+      await loadRazorpayScript();
+
+      // Create Razorpay order for boost
+      const createRes = await fetch("/api/payments/razorpay/boost/create", {
+        method: "POST",
+        credentials: "include",
+        headers: authHeaders(token),
+        body: JSON.stringify({
+          boostPlanId: plan._id,
+          propertyId: selectedBoostProperty._id,
+        }),
+      });
+
+      const createJson = await createRes.json();
+      if (!createRes.ok || !createJson?.success) {
+        toast.error(createJson?.error || "Failed to create order");
+        return;
+      }
+
+      const order = createJson.data;
+
+      // Open Razorpay checkout
+      const rzp = new (window as any).Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency || "INR",
+        name: "Ashish Properties",
+        description: `Boost: ${plan.name}`,
+        order_id: order.razorpayOrderId,
+        notes: { boostPlanId: plan._id, propertyId: selectedBoostProperty._id },
+        theme: { color: "#EAB308" },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await fetch("/api/payments/razorpay/boost/verify", {
+              method: "POST",
+              credentials: "include",
+              headers: authHeaders(token),
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                transactionId: order.transactionId,
+              }),
+            });
+            const verifyJson = await verifyRes.json();
+            if (verifyJson?.success) {
+              toast.success("Boost applied successfully!");
+              setBoostModalOpen(false);
+              setSelectedBoostProperty(null);
+              fetchDashboardData(false);
+            } else {
+              toast.error(verifyJson?.error || "Payment verification failed");
+            }
+          } catch (err) {
+            toast.error("Payment verification failed");
+          }
+        },
+      });
+      rzp.open();
     } catch (error) {
-      console.error("Failed to apply boost:", error);
-      toast.error("Failed to apply boost. Please try again.");
+      console.error("Boost payment error:", error);
+      toast.error("Failed to process payment");
     }
   };
 
@@ -253,29 +326,81 @@ export default function EnhancedSellerDashboard() {
   };
 
   // Apply featured to property
-  const applyFeatured = async (planId: string) => {
+  const applyFeatured = async (plan: any) => {
     if (!selectedFeaturedProperty) return;
     try {
       const token = await getAuthToken();
-      const res = await api.post("featured/apply", {
-        propertyId: selectedFeaturedProperty._id,
-        packageId: planId,
-      }, token || "");
-      if (res.data?.success) {
-        if (res.data.autoApproved) {
-          toast.success("Featured applied! Your property is now in Featured Properties section.");
-        } else {
-          toast.success("Featured request submitted for admin review.");
-        }
-        setFeaturedModalOpen(false);
-        setSelectedFeaturedProperty(null);
-        fetchDashboardData(false);
-      } else {
-        toast.error(res.data?.error || "Failed to apply featured");
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
       }
+
+      await loadRazorpayScript();
+
+      // Create Razorpay order for featured
+      const createRes = await fetch("/api/payments/razorpay/featured/create", {
+        method: "POST",
+        credentials: "include",
+        headers: authHeaders(token),
+        body: JSON.stringify({
+          packageId: plan._id,
+          propertyId: selectedFeaturedProperty._id,
+        }),
+      });
+
+      const createJson = await createRes.json();
+      if (!createRes.ok || !createJson?.success) {
+        toast.error(createJson?.error || "Failed to create order");
+        return;
+      }
+
+      const order = createJson.data;
+
+      // Open Razorpay checkout
+      const rzp = new (window as any).Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency || "INR",
+        name: "Ashish Properties",
+        description: `Featured: ${plan.name}`,
+        order_id: order.razorpayOrderId,
+        notes: { packageId: plan._id, propertyId: selectedFeaturedProperty._id },
+        theme: { color: "#3B82F6" },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await fetch("/api/payments/razorpay/featured/verify", {
+              method: "POST",
+              credentials: "include",
+              headers: authHeaders(token),
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                transactionId: order.transactionId,
+              }),
+            });
+            const verifyJson = await verifyRes.json();
+            if (verifyJson?.success) {
+              if (verifyJson.autoApproved) {
+                toast.success("Featured applied! Your property is now in Featured Properties section.");
+              } else {
+                toast.success("Featured request submitted. Awaiting admin approval.");
+              }
+              setFeaturedModalOpen(false);
+              setSelectedFeaturedProperty(null);
+              fetchDashboardData(false);
+            } else {
+              toast.error(verifyJson?.error || "Payment verification failed");
+            }
+          } catch (err) {
+            toast.error("Payment verification failed");
+          }
+        },
+      });
+      rzp.open();
     } catch (error) {
-      console.error("Failed to apply featured:", error);
-      toast.error("Failed to apply featured. Please try again.");
+      console.error("Featured payment error:", error);
+      toast.error("Failed to process payment");
     }
   };
 
@@ -2154,7 +2279,7 @@ export default function EnhancedSellerDashboard() {
                   </ul>
                   <Button
                     className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
-                    onClick={() => applyBoost(plan._id)}
+                    onClick={() => applyBoost(plan)}
                   >
                     Buy & Apply
                   </Button>
@@ -2208,7 +2333,7 @@ export default function EnhancedSellerDashboard() {
                   </ul>
                   <Button
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                    onClick={() => applyFeatured(plan._id)}
+                    onClick={() => applyFeatured(plan)}
                   >
                     Buy & Apply
                   </Button>

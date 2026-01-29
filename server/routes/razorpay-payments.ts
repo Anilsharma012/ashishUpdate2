@@ -423,14 +423,323 @@ export const getRazorpayPaymentStatus: RequestHandler = async (req, res) => {
   }
 };
 
+/** =====================================================================
+ *  POST /api/payments/razorpay/boost/create
+ *  Body: { boostPlanId: string; propertyId: string }
+ *  Creates Razorpay order for boost plan purchase
+ * ===================================================================== */
+export const createBoostOrder: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const cfg = getRazorpayConfig();
+    if (!cfg) return bad(res, "Razorpay is not configured");
+
+    const userIdRaw = (req as any).userId as string | undefined;
+    if (!userIdRaw) return bad(res, "Please login to continue", 401);
+
+    let userObjId: ObjectId;
+    try {
+      userObjId = new ObjectId(userIdRaw);
+    } catch {
+      return bad(res, "Invalid user id", 401);
+    }
+
+    const { boostPlanId, propertyId } = req.body as { boostPlanId: string; propertyId: string };
+    if (!boostPlanId || !propertyId) return bad(res, "Missing boostPlanId or propertyId");
+
+    let boostPlanObjId: ObjectId;
+    let propertyObjId: ObjectId;
+    try {
+      boostPlanObjId = new ObjectId(boostPlanId);
+      propertyObjId = new ObjectId(propertyId);
+    } catch {
+      return bad(res, "Invalid boost plan or property ID");
+    }
+
+    const boostPlan = await db.collection("boost_plans").findOne({ _id: boostPlanObjId });
+    if (!boostPlan) return bad(res, "Boost plan not found", 404);
+
+    const property = await db.collection("properties").findOne({ _id: propertyObjId });
+    if (!property) return bad(res, "Property not found", 404);
+
+    const amountRupees = Number(boostPlan.price || 0);
+    if (!amountRupees || amountRupees <= 0) return bad(res, "Invalid boost plan price");
+
+    const razorpay = new RazorpayCtor({ key_id: cfg.keyId, key_secret: cfg.keySecret });
+    const rzpOrder = await razorpay.orders.create({
+      amount: rupeesToPaise(amountRupees),
+      currency: "INR",
+      receipt: `boost_${Date.now()}`,
+    });
+
+    const tx = {
+      type: "boost",
+      userId: userObjId,
+      propertyId: propertyObjId,
+      boostPlanId: boostPlanObjId,
+      amount: amountRupees,
+      currency: "INR",
+      status: "pending",
+      razorpayOrderId: rzpOrder.id,
+      createdAt: new Date(),
+    };
+    const insertResult = await db.collection("transactions").insertOne(tx);
+
+    return res.json({
+      success: true,
+      data: {
+        transactionId: String(insertResult.insertedId),
+        razorpayOrderId: rzpOrder.id,
+        amount: rupeesToPaise(amountRupees),
+        currency: "INR",
+        keyId: cfg.keyId,
+      },
+    });
+  } catch (err: any) {
+    console.error("❌ Error creating boost order:", err?.message || err);
+    return res.status(500).json({ success: false, error: "Failed to create boost order" });
+  }
+};
+
+/** =====================================================================
+ *  POST /api/payments/razorpay/boost/verify
+ *  Verify boost payment and apply boost to property
+ * ===================================================================== */
+export const verifyBoostPayment: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const cfg = getRazorpayConfig();
+    if (!cfg) return bad(res, "Razorpay is not configured");
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, transactionId } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !transactionId) {
+      return bad(res, "Missing payment verification data");
+    }
+
+    const generated = crypto
+      .createHmac("sha256", cfg.keySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generated !== razorpay_signature) {
+      return bad(res, "Invalid payment signature", 400);
+    }
+
+    let txObjId: ObjectId;
+    try {
+      txObjId = new ObjectId(transactionId);
+    } catch {
+      return bad(res, "Invalid transaction ID");
+    }
+
+    const tx = await db.collection("transactions").findOne({ _id: txObjId });
+    if (!tx) return bad(res, "Transaction not found", 404);
+
+    // Update transaction status
+    await db.collection("transactions").updateOne(
+      { _id: txObjId },
+      {
+        $set: {
+          status: "paid",
+          razorpayPaymentId: razorpay_payment_id,
+          paidAt: new Date(),
+        },
+      }
+    );
+
+    // Get boost plan duration
+    const boostPlan = await db.collection("boost_plans").findOne({ _id: tx.boostPlanId });
+    const durationHours = boostPlan?.duration || 24;
+
+    // Apply boost to property
+    const boostEndTime = new Date(Date.now() + durationHours * 60 * 60 * 1000);
+    await db.collection("properties").updateOne(
+      { _id: tx.propertyId },
+      {
+        $set: {
+          boosted: true,
+          boostPlanId: tx.boostPlanId,
+          boostStartTime: new Date(),
+          boostEndTime: boostEndTime,
+        },
+      }
+    );
+
+    return res.json({ success: true, message: "Boost applied successfully" });
+  } catch (err: any) {
+    console.error("❌ Error verifying boost payment:", err?.message || err);
+    return res.status(500).json({ success: false, error: "Failed to verify boost payment" });
+  }
+};
+
+/** =====================================================================
+ *  POST /api/payments/razorpay/featured/create
+ *  Body: { packageId: string; propertyId: string }
+ *  Creates Razorpay order for featured plan purchase
+ * ===================================================================== */
+export const createFeaturedOrder: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const cfg = getRazorpayConfig();
+    if (!cfg) return bad(res, "Razorpay is not configured");
+
+    const userIdRaw = (req as any).userId as string | undefined;
+    if (!userIdRaw) return bad(res, "Please login to continue", 401);
+
+    let userObjId: ObjectId;
+    try {
+      userObjId = new ObjectId(userIdRaw);
+    } catch {
+      return bad(res, "Invalid user id", 401);
+    }
+
+    const { packageId, propertyId } = req.body as { packageId: string; propertyId: string };
+    if (!packageId || !propertyId) return bad(res, "Missing packageId or propertyId");
+
+    let packageObjId: ObjectId;
+    let propertyObjId: ObjectId;
+    try {
+      packageObjId = new ObjectId(packageId);
+      propertyObjId = new ObjectId(propertyId);
+    } catch {
+      return bad(res, "Invalid package or property ID");
+    }
+
+    const pkg = await db.collection("ad_packages").findOne({ _id: packageObjId });
+    if (!pkg) return bad(res, "Package not found", 404);
+
+    const property = await db.collection("properties").findOne({ _id: propertyObjId });
+    if (!property) return bad(res, "Property not found", 404);
+
+    const amountRupees = Number(pkg.price || 0);
+    if (!amountRupees || amountRupees <= 0) return bad(res, "Invalid package price");
+
+    const razorpay = new RazorpayCtor({ key_id: cfg.keyId, key_secret: cfg.keySecret });
+    const rzpOrder = await razorpay.orders.create({
+      amount: rupeesToPaise(amountRupees),
+      currency: "INR",
+      receipt: `featured_${Date.now()}`,
+    });
+
+    const tx = {
+      type: "featured",
+      userId: userObjId,
+      propertyId: propertyObjId,
+      packageId: packageObjId,
+      amount: amountRupees,
+      currency: "INR",
+      status: "pending",
+      razorpayOrderId: rzpOrder.id,
+      createdAt: new Date(),
+    };
+    const insertResult = await db.collection("transactions").insertOne(tx);
+
+    return res.json({
+      success: true,
+      data: {
+        transactionId: String(insertResult.insertedId),
+        razorpayOrderId: rzpOrder.id,
+        amount: rupeesToPaise(amountRupees),
+        currency: "INR",
+        keyId: cfg.keyId,
+      },
+    });
+  } catch (err: any) {
+    console.error("❌ Error creating featured order:", err?.message || err);
+    return res.status(500).json({ success: false, error: "Failed to create featured order" });
+  }
+};
+
+/** =====================================================================
+ *  POST /api/payments/razorpay/featured/verify
+ *  Verify featured payment and apply featured to property
+ * ===================================================================== */
+export const verifyFeaturedPayment: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const cfg = getRazorpayConfig();
+    if (!cfg) return bad(res, "Razorpay is not configured");
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, transactionId } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !transactionId) {
+      return bad(res, "Missing payment verification data");
+    }
+
+    const generated = crypto
+      .createHmac("sha256", cfg.keySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generated !== razorpay_signature) {
+      return bad(res, "Invalid payment signature", 400);
+    }
+
+    let txObjId: ObjectId;
+    try {
+      txObjId = new ObjectId(transactionId);
+    } catch {
+      return bad(res, "Invalid transaction ID");
+    }
+
+    const tx = await db.collection("transactions").findOne({ _id: txObjId });
+    if (!tx) return bad(res, "Transaction not found", 404);
+
+    // Update transaction status
+    await db.collection("transactions").updateOne(
+      { _id: txObjId },
+      {
+        $set: {
+          status: "paid",
+          razorpayPaymentId: razorpay_payment_id,
+          paidAt: new Date(),
+        },
+      }
+    );
+
+    // Check if property is already admin-approved
+    const property = await db.collection("properties").findOne({ _id: tx.propertyId });
+    const isAutoApproved = property?.approvalStatus === "approved";
+
+    // Apply featured to property
+    await db.collection("properties").updateOne(
+      { _id: tx.propertyId },
+      {
+        $set: {
+          featured: isAutoApproved, // Auto-approve if already admin-approved
+          featuredPackageId: tx.packageId,
+          featuredPurchaseDate: new Date(),
+          featuredPending: !isAutoApproved, // Mark as pending if not yet approved
+        },
+      }
+    );
+
+    return res.json({
+      success: true,
+      message: isAutoApproved ? "Featured applied successfully" : "Featured request submitted for approval",
+      autoApproved: isAutoApproved,
+    });
+  } catch (err: any) {
+    console.error("❌ Error verifying featured payment:", err?.message || err);
+    return res.status(500).json({ success: false, error: "Failed to verify featured payment" });
+  }
+};
+
 /** ---------- Router (default export) ----------
  *   POST /api/payments/razorpay/create
  *   POST /api/payments/razorpay/verify
  *   GET  /api/payments/razorpay/status/:orderId
+ *   POST /api/payments/razorpay/boost/create
+ *   POST /api/payments/razorpay/boost/verify
+ *   POST /api/payments/razorpay/featured/create
+ *   POST /api/payments/razorpay/featured/verify
  */
 export const razorpayRouter = Router();
 razorpayRouter.post("/create", createRazorpayOrder);
 razorpayRouter.post("/verify", verifyRazorpayPayment);
 razorpayRouter.get("/status/:orderId", getRazorpayPaymentStatus);
+razorpayRouter.post("/boost/create", createBoostOrder);
+razorpayRouter.post("/boost/verify", verifyBoostPayment);
+razorpayRouter.post("/featured/create", createFeaturedOrder);
+razorpayRouter.post("/featured/verify", verifyFeaturedPayment);
 
 export default razorpayRouter;
