@@ -263,6 +263,7 @@ export default function EnhancedSellerDashboard() {
       const order = createJson.data;
 
       // Open Razorpay checkout
+      console.log("Opening Razorpay with order:", order);
       const rzp = new (window as any).Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -272,6 +273,7 @@ export default function EnhancedSellerDashboard() {
         order_id: order.razorpayOrderId,
         notes: { boostPlanId: plan._id, propertyId: selectedBoostProperty._id },
         theme: { color: "#EAB308" },
+        prefill: {},
         handler: async (response: any) => {
           try {
             const verifyRes = await fetch("/api/payments/razorpay/boost/verify", {
@@ -298,7 +300,20 @@ export default function EnhancedSellerDashboard() {
             toast.error("Payment verification failed");
           }
         },
+        modal: {
+          ondismiss: () => {
+            console.log("Razorpay modal dismissed");
+          },
+          escape: true,
+          backdropclose: false,
+        },
       });
+      
+      rzp.on("payment.failed", (response: any) => {
+        console.error("Razorpay payment failed:", response.error);
+        toast.error(response.error?.description || "Payment failed");
+      });
+      
       rzp.open();
     } catch (error) {
       console.error("Boost payment error:", error);
@@ -357,6 +372,7 @@ export default function EnhancedSellerDashboard() {
       const order = createJson.data;
 
       // Open Razorpay checkout
+      console.log("Opening Razorpay with order:", order);
       const rzp = new (window as any).Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -366,6 +382,7 @@ export default function EnhancedSellerDashboard() {
         order_id: order.razorpayOrderId,
         notes: { packageId: plan._id, propertyId: selectedFeaturedProperty._id },
         theme: { color: "#3B82F6" },
+        prefill: {},
         handler: async (response: any) => {
           try {
             const verifyRes = await fetch("/api/payments/razorpay/featured/verify", {
@@ -396,7 +413,20 @@ export default function EnhancedSellerDashboard() {
             toast.error("Payment verification failed");
           }
         },
+        modal: {
+          ondismiss: () => {
+            console.log("Razorpay modal dismissed");
+          },
+          escape: true,
+          backdropclose: false,
+        },
       });
+      
+      rzp.on("payment.failed", (response: any) => {
+        console.error("Razorpay payment failed:", response.error);
+        toast.error(response.error?.description || "Payment failed");
+      });
+      
       rzp.open();
     } catch (error) {
       console.error("Featured payment error:", error);

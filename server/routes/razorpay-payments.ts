@@ -466,11 +466,17 @@ export const createBoostOrder: RequestHandler = async (req, res) => {
     if (!amountRupees || amountRupees <= 0) return bad(res, "Invalid boost plan price");
 
     const razorpay = new RazorpayCtor({ key_id: cfg.keyId, key_secret: cfg.keySecret });
+    
+    const amountPaise = rupeesToPaise(amountRupees);
+    console.log("📦 Creating boost order:", { amountRupees, amountPaise, keyId: cfg.keyId.slice(0, 12) + "..." });
+    
     const rzpOrder = await razorpay.orders.create({
-      amount: rupeesToPaise(amountRupees),
+      amount: amountPaise,
       currency: "INR",
       receipt: `boost_${Date.now()}`,
     });
+    
+    console.log("✅ Boost order created:", { orderId: rzpOrder.id, amount: rzpOrder.amount });
 
     const tx = {
       type: "boost",

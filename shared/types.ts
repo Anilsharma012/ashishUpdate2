@@ -380,7 +380,7 @@ export interface BoostPlan {
 export const ROHTAK_AREAS = [
   "Model Town",
   "Suncity",
-  "Suncity Heist",
+  "Suncity Heights",
   "Sector 1",
   "Sector 2",
   "Sector 3",
