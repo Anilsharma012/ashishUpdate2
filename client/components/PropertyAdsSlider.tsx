@@ -79,40 +79,38 @@ const PropertyAdsSlider: React.FC = () => {
       try {
         setLoading(true);
         
-        // Featured Properties section shows ONLY featured properties (NOT boosted)
-        // Boosted properties are shown in BoostBanner section separately
+        // Featured Properties section shows ALL featured properties
+        // Properties can appear in MULTIPLE sections based on active packages (timeline-based)
+        // e.g., if a property has both Boost + Featured active, it shows in both sections
         const featuredRes = await (window as any).api("/properties/approved-featured", { timeout: 10000 });
         
-        const featuredOnlyProperties: PremiumProperty[] = [];
+        const featuredProperties: PremiumProperty[] = [];
         
-        // Process featured properties - exclude boosted ones
+        // Process featured properties - include ALL featured properties
+        // No exclusion based on boost status - show in both sections if both are active
         if (featuredRes?.ok && featuredRes.json?.success) {
           const featuredData = featuredRes.json.data || [];
           const featuredArray = Array.isArray(featuredData) ? featuredData : [];
           featuredArray.forEach((p: any) => {
-            // Only include if NOT currently boosted
-            const isBoosted = p.boosted === true && p.boostEndTime && new Date(p.boostEndTime) > new Date();
-            if (!isBoosted) {
-              featuredOnlyProperties.push({
-                _id: p._id,
-                title: p.title || "Featured Property",
-                price: p.price || 0,
-                priceType: p.priceType,
-                propertyType: p.propertyType,
-                images: Array.isArray(p.images) ? p.images : [],
-                location: p.location || {},
-                bedrooms: p.bedrooms,
-                bathrooms: p.bathrooms,
-                area: p.area,
-                areaUnit: p.areaUnit || "sq.ft",
-                premium: p.premium,
-                featured: true,
-              });
-            }
+            featuredProperties.push({
+              _id: p._id,
+              title: p.title || "Featured Property",
+              price: p.price || 0,
+              priceType: p.priceType,
+              propertyType: p.propertyType,
+              images: Array.isArray(p.images) ? p.images : [],
+              location: p.location || {},
+              bedrooms: p.bedrooms,
+              bathrooms: p.bathrooms,
+              area: p.area,
+              areaUnit: p.areaUnit || "sq.ft",
+              premium: p.premium,
+              featured: true,
+            });
           });
         }
         
-        setProperties(featuredOnlyProperties);
+        setProperties(featuredProperties);
       } catch (e) {
         console.warn("Featured properties fetch failed:", e);
         setProperties([]);
