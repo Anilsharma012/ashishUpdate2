@@ -1729,7 +1729,7 @@ export default function PostProperty() {
                     <SelectValue placeholder="Select nearby landmark" />
                   </SelectTrigger>
                   <SelectContent className="z-[10050] max-h-[60vh] overscroll-contain z-raise">
-                    {getRohtakLandmarks().map((landmark) => (
+                    {ROHTAK_AREAS.map((landmark) => (
                       <SelectItem key={landmark} value={landmark}>
                         {landmark}
                       </SelectItem>
