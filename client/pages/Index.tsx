@@ -74,9 +74,6 @@ export default function Index() {
         {/* Boost Up Banner - right below categories */}
         <BoostBanner />
 
-        {/* Featured Property Ads Slider - below boost banner */}
-        <PropertyAdsSlider />
-
         {/* Ad Slot */}
         <div className="px-4 mt-4">
           <AdSlot format="horizontal" slotKey="below_categories" />
@@ -86,6 +83,9 @@ export default function Index() {
         <div className="px-4 mb-6 bg-white py-6">
           <HomepageBanner position="homepage_middle" />
         </div>
+
+        {/* Featured Properties - directly above Fresh Recommendations */}
+        <PropertyAdsSlider />
 
         <div className="bg-white">
           <OLXStyleListings />
