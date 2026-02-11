@@ -15,6 +15,7 @@ import BoostBanner from "../components/BoostBanner";
 import AdSlot from "../components/AdSlot";
 import AdvertisementBannerCarousel from "../components/AdvertisementBannerCarousel";
 import AdvertisementForm from "../components/AdvertisementBanners";
+import BoostPackagesShowcase from "../components/BoostPackagesShowcase";
 
 export default function Index() {
   const [showAdForm, setShowAdForm] = useState(false);
@@ -93,6 +94,9 @@ export default function Index() {
         <div className="bg-white py-8">
           <PackagesShowcase />
         </div>
+
+        {/* Boost Up Packages - below Advertisement Packages */}
+        <BoostPackagesShowcase />
       </main>
       <BottomNavigation />
       <PWAInstallPrompt />
