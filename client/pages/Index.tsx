@@ -71,18 +71,18 @@ export default function Index() {
         {/* Dynamic Categories (moved up as requested) */}
         <OLXStyleCategories />
 
-        {/* Ad Slot: Below categories (CLS-safe) */}
+        {/* Boost Up Banner - right below categories */}
+        <BoostBanner />
+
+        {/* Featured Property Ads Slider - below boost banner */}
+        <PropertyAdsSlider />
+
+        {/* Ad Slot */}
         <div className="px-4 mt-4">
           <AdSlot format="horizontal" slotKey="below_categories" />
         </div>
 
-        {/* Boost Up Banner - above Featured Properties */}
-        <BoostBanner />
-
-        {/* Featured Property Ads Slider (moved below categories) */}
-        <PropertyAdsSlider />
-
-        {/* Mid-size banner below categories */}
+        {/* Mid-size banner */}
         <div className="px-4 mb-6 bg-white py-6">
           <HomepageBanner position="homepage_middle" />
         </div>
