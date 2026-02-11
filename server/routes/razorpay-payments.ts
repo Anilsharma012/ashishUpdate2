@@ -706,15 +706,22 @@ export const verifyFeaturedPayment: RequestHandler = async (req, res) => {
     const property = await db.collection("properties").findOne({ _id: tx.propertyId });
     const isAutoApproved = property?.approvalStatus === "approved";
 
+    // Get package duration
+    const pkg = await db.collection("ad_packages").findOne({ _id: tx.packageId });
+    const durationDays = pkg?.duration || pkg?.durationDays || 30;
+    const featuredEndDate = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+
     // Apply featured to property
     await db.collection("properties").updateOne(
       { _id: tx.propertyId },
       {
         $set: {
-          featured: isAutoApproved, // Auto-approve if already admin-approved
+          featured: isAutoApproved,
           featuredPackageId: tx.packageId,
           featuredPurchaseDate: new Date(),
-          featuredPending: !isAutoApproved, // Mark as pending if not yet approved
+          featuredStartDate: new Date(),
+          featuredEndDate: featuredEndDate,
+          featuredPending: !isAutoApproved,
         },
       }
     );

@@ -10,12 +10,12 @@ import BottomNavigation from "../components/BottomNavigation";
 import HomepageBanner from "../components/HomepageBanner";
 import StaticFooter from "../components/StaticFooter";
 import HeroImageSlider from "../components/HeroImageSlider";
-import PropertyAdsSlider from "../components/PropertyAdsSlider";
 import BoostBanner from "../components/BoostBanner";
 import AdSlot from "../components/AdSlot";
 import AdvertisementBannerCarousel from "../components/AdvertisementBannerCarousel";
 import AdvertisementForm from "../components/AdvertisementBanners";
 import BoostPackagesShowcase from "../components/BoostPackagesShowcase";
+import FeaturedBanner from "../components/FeaturedBanner";
 
 export default function Index() {
   const [showAdForm, setShowAdForm] = useState(false);
@@ -74,6 +74,9 @@ export default function Index() {
         {/* Boost Up Banner - right below categories */}
         <BoostBanner />
 
+        {/* Featured Properties Banner - right below boost banner */}
+        <FeaturedBanner />
+
         {/* Ad Slot */}
         <div className="px-4 mt-4">
           <AdSlot format="horizontal" slotKey="below_categories" />
@@ -83,9 +86,6 @@ export default function Index() {
         <div className="px-4 mb-6 bg-white py-6">
           <HomepageBanner position="homepage_middle" />
         </div>
-
-        {/* Featured Properties - directly above Fresh Recommendations */}
-        <PropertyAdsSlider />
 
         <div className="bg-white">
           <OLXStyleListings />

@@ -324,10 +324,14 @@ export const getApprovedFeaturedProperties: RequestHandler = async (req, res) =>
       .collection("properties")
       .find({
         featured: true,
-        featuredEndDate: { $gt: now },
         approvalStatus: "approved",
         status: "active",
         isDeleted: { $ne: true },
+        $or: [
+          { featuredEndDate: { $gt: now } },
+          { featuredEndDate: { $exists: false } },
+          { featuredEndDate: null },
+        ],
       })
       .sort({ featuredStartDate: -1 })
       .limit(20)
