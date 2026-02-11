@@ -254,9 +254,8 @@ export default function OLXStyleListings() {
       try {
         mode === "initial" ? setLoading(true) : setLoadingMore(true);
 
-        // Try page-based API
         const res = await apiGet(
-          `properties?status=active&limit=${PAGE_SIZE}&page=${nextPage}`,
+          `properties?status=active&premium=true&limit=${PAGE_SIZE}&page=${nextPage}`,
         );
 
         if (res?.ok && res?.json?.success) {
@@ -527,7 +526,7 @@ export default function OLXStyleListings() {
     <div className="bg-white">
       <div className="px-4 py-4 max-w-6xl mx-auto">
         <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
-          Fresh recommendations
+          Fresh Recommendations
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
