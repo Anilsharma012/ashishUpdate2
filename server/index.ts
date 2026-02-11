@@ -257,6 +257,10 @@ import {
   createRazorpayOrder,
   verifyRazorpayPayment,
   getRazorpayPaymentStatus,
+  createBoostOrder,
+  verifyBoostPayment,
+  createFeaturedOrder,
+  verifyFeaturedPayment,
 } from "./routes/razorpay-payments";
 import {
   testPhonePeConfig,
@@ -765,7 +769,7 @@ export function createServer() {
 
   // Serve uploaded files (maps, properties, etc.)
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-  app.use("/api/payments/razorpay", requireBuyer, razorpayRoutes);
+  app.use("/api/payments/razorpay", authenticateToken, razorpayRoutes);
 
   // Health check with database status and CORS info
   app.get("/api/ping", async (req, res) => {
@@ -1637,6 +1641,26 @@ export function createServer() {
     "/api/payments/razorpay/status/:orderId",
     authenticateToken,
     getRazorpayPaymentStatus,
+  );
+  app.post(
+    "/api/payments/razorpay/boost/create",
+    authenticateToken,
+    createBoostOrder,
+  );
+  app.post(
+    "/api/payments/razorpay/boost/verify",
+    authenticateToken,
+    verifyBoostPayment,
+  );
+  app.post(
+    "/api/payments/razorpay/featured/create",
+    authenticateToken,
+    createFeaturedOrder,
+  );
+  app.post(
+    "/api/payments/razorpay/featured/verify",
+    authenticateToken,
+    verifyFeaturedPayment,
   );
 
   // Test endpoints for debugging

@@ -155,7 +155,7 @@ export const requireBuyer = (
 
   const userType = parseLower((req as any).userType) || "";
   if (
-    !["seller", "user", "agent", "customer", "admin"].includes(userType as string)
+    !["seller", "user", "agent", "customer", "admin", "buyer"].includes(userType as string)
   ) {
     return res
       .status(401)
