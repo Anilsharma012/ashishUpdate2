@@ -152,7 +152,7 @@ export default defineConfig(({ command }) => {
       port: DEV_PORT,
       strictPort: false, // allow fallback if taken
       // Allow Replit preview/tunnel subdomains
-      allowedHosts: [".replit.dev", ".repl.co", "localhost"],
+      allowedHosts: true,
       hmr: {
         protocol: "wss",
         clientPort: 443,
@@ -165,7 +165,7 @@ export default defineConfig(({ command }) => {
     preview: {
       host: true,
       port: DEV_PORT,
-      allowedHosts: [".replit.dev", ".repl.co", "localhost"],
+      allowedHosts: true,
     },
 
     // Prevent Vite from touching server-only deps
