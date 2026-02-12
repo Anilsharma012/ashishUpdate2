@@ -79,7 +79,8 @@ export const createTransaction: RequestHandler = async (req, res) => {
           $set: {
             packageId: pkgId,
             packageExpiry,
-            featured: package_.type === "featured" || package_.type === "premium",
+            featured: package_.type === "featured",
+            premium: package_.type === "premium" || package_.type === "featured",
             updatedAt: new Date(),
           },
         }
@@ -309,7 +310,8 @@ export const updateTransactionStatus: RequestHandler = async (req, res) => {
               $set: {
                 packageId: pkgId,
                 packageExpiry,
-                featured: package_.type === "featured" || package_.type === "premium",
+                featured: package_.type === "featured",
+                premium: package_.type === "premium" || package_.type === "featured",
                 updatedAt: new Date(),
               },
             }
@@ -378,7 +380,8 @@ export const verifyPayment: RequestHandler = async (req, res) => {
               $set: {
                 packageId: pkgId,
                 packageExpiry,
-                featured: package_.type === "featured" || package_.type === "premium",
+                featured: package_.type === "featured",
+                premium: package_.type === "premium" || package_.type === "featured",
                 updatedAt: new Date(),
               },
             }

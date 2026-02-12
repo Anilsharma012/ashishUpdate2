@@ -344,8 +344,8 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
             $set: {
               packageId: new ObjectId(String(tx.packageId)),
               packageExpiry,
-              featured:
-                package_.type === "featured" || package_.type === "premium",
+              featured: package_.type === "featured",
+              premium: package_.type === "premium" || package_.type === "featured",
               // After successful payment, property is immediately active
               status: "active",
               approvalStatus: "approved",

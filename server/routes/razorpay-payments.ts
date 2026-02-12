@@ -303,7 +303,8 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
               isApproved: false,
 
               // UX extras
-              featured: pkg.type === "featured" || pkg.type === "premium",
+              featured: pkg.type === "featured",
+              premium: pkg.type === "premium" || pkg.type === "featured",
               updatedAt: now,
             },
             $unset: {
