@@ -65,8 +65,8 @@ export default function Index() {
         {/* Hero Image Slider */}
         {/*<HeroImageSlider /> */}
 
-        {/* Advertisement Banner Carousel */}
-        <AdvertisementBannerCarousel onBannerClick={handleBannerClick} />
+        {/* Advertisement Banner Carousel - disabled */}
+        {/* <AdvertisementBannerCarousel onBannerClick={handleBannerClick} /> */}
 
         {/* Dynamic Categories (moved up as requested) */}
         <OLXStyleCategories />
