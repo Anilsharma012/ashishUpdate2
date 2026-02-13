@@ -163,12 +163,12 @@ export default function BoostBanner() {
   }
 
   return (
-    <div className="px-4 py-6 bg-gray-50">
+    <div className="px-4 py-3 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-[#C70000]" />
-            <h2 className="text-xl font-bold text-gray-900">{settings.title}</h2>
+            <Zap className="h-4 w-4 text-[#C70000]" />
+            <h2 className="text-base font-bold text-gray-900">{settings.title}</h2>
             {settings.showBoostedCount && (
               <span className="bg-[#C70000] text-white px-2 py-0.5 rounded-full text-xs font-medium">
                 {properties.length} Active
@@ -205,7 +205,7 @@ export default function BoostBanner() {
                       onClick={() => navigate(`/property/${property._id}`)}
                       className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
                     >
-                      <div className="relative h-48 md:h-56">
+                      <div className="relative h-32 md:h-40">
                         <img
                           src={mainUrl}
                           alt={property.title}
@@ -223,39 +223,39 @@ export default function BoostBanner() {
                           </span>
                         </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 md:p-6">
-                          <h3 className="text-white text-lg md:text-xl font-bold mb-1 line-clamp-1">
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 md:p-4">
+                          <h3 className="text-white text-sm md:text-base font-bold mb-0.5 line-clamp-1">
                             {property.title}
                           </h3>
-                          <div className="flex items-center text-white/90 text-sm mb-2">
-                            <MapPin className="h-4 w-4 mr-1" />
+                          <div className="flex items-center text-white/90 text-xs mb-1">
+                            <MapPin className="h-3 w-3 mr-1" />
                             {getLocationText(property.location)}
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-white text-xl md:text-2xl font-bold">
+                            <span className="text-white text-base md:text-lg font-bold">
                               {formatPrice(property.price)}
                               {property.priceType === "rent" && (
                                 <span className="text-sm font-normal opacity-80">/mo</span>
                               )}
                             </span>
 
-                            <div className="flex items-center gap-3 text-white/90 text-sm">
+                            <div className="flex items-center gap-2 text-white/90 text-xs">
                               {property.bedrooms && (
                                 <span className="flex items-center gap-1">
-                                  <Bed className="h-4 w-4" />
+                                  <Bed className="h-3 w-3" />
                                   {property.bedrooms}
                                 </span>
                               )}
                               {property.bathrooms && (
                                 <span className="flex items-center gap-1">
-                                  <Bath className="h-4 w-4" />
+                                  <Bath className="h-3 w-3" />
                                   {property.bathrooms}
                                 </span>
                               )}
                               {property.area && (
                                 <span className="flex items-center gap-1">
-                                  <Square className="h-4 w-4" />
+                                  <Square className="h-3 w-3" />
                                   {property.area} {property.areaUnit || "sq.ft"}
                                 </span>
                               )}
@@ -289,7 +289,7 @@ export default function BoostBanner() {
         </div>
 
         {properties.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center gap-2 mt-2">
             {properties.map((_, idx) => (
               <button
                 key={idx}
