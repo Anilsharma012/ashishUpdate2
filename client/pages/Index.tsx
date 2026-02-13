@@ -63,7 +63,7 @@ export default function Index() {
         {/* <TopBanner /> */}
 
         {/* Hero Image Slider */}
-        {/*<HeroImageSlider /> */}
+        <HeroImageSlider />
 
         {/* Advertisement Banner Carousel - disabled */}
         {/* <AdvertisementBannerCarousel onBannerClick={handleBannerClick} /> */}
