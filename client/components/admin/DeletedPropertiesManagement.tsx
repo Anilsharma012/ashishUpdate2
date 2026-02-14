@@ -155,16 +155,13 @@ export default function DeletedPropertiesManagement() {
     }
   };
 
-  const formatDate = (date: Date | string | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+ const formatDate = (date: Date | string | null | undefined) => {
+  if (!date) return "-";
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleString("en-IN");
+};
+
 
   if (loading) {
     return (
@@ -262,12 +259,15 @@ export default function DeletedPropertiesManagement() {
                   <TableCell className="capitalize">
                     {property.propertyType}
                   </TableCell>
-                  <TableCell>
-                    ₹{property.price.toLocaleString("en-IN")}
-                    <span className="text-xs text-gray-500 ml-1">
-                      {property.priceType === "rent" ? "/mo" : ""}
-                    </span>
-                  </TableCell>
+                 <TableCell>
+  {typeof property.price === "number"
+    ? `₹${property.price.toLocaleString("en-IN")}`
+    : "-"}
+  <span className="text-xs text-gray-500 ml-1">
+    {property.priceType === "rent" ? "/mo" : ""}
+  </span>
+</TableCell>
+
                   <TableCell className="max-w-xs truncate">
                     {property.location.area || property.location.sector}
                   </TableCell>
